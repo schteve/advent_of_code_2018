@@ -11,5 +11,7 @@ mod day_02_part1;
 mod day_02_part2;
 mod day_03_part1;
 mod day_03_part2;
+mod day_04_part1;
+mod day_04_part2;
 
 aoc_lib! { year = 2018 }
