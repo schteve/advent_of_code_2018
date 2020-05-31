@@ -50,24 +50,8 @@
 */
 
 use regex::Regex;
+use super::common::*;
 use std::collections::HashMap;
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-struct Point {
-    x: i32,
-    y: i32,
-}
-
-impl Point {
-    fn manhattan(a: Point, b: Point) -> i32 {
-        let delta = Point {
-            x: a.x - b.x,
-            y: a.y - b.y,
-        };
-        let distance = delta.x.abs() + delta.y.abs();
-        distance as i32
-    }
-}
 
 struct LandingZone {
     coordinates: Vec<Point>,
