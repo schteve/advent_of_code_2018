@@ -5,6 +5,45 @@ struct LLNode {
     value: u32,
 }
 
+pub struct LLIter<'a> {
+    list: &'a LinkedListCirc,
+    index: Option<usize>,
+}
+
+impl<'a> LLIter<'a> {
+    fn new(list: &'a LinkedListCirc) -> Self {
+        Self {
+            list: list,
+            index: list.head,
+        }
+    }
+}
+
+impl<'a> Iterator for LLIter<'a> {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(head_idx) = self.list.head {
+            if let Some(idx) = self.index {
+                // Traverse to the next node, or stop if the head has been reached
+                if self.list.data[idx].next == head_idx {
+                    self.index = None;
+                } else {
+                    self.index = Some(self.list.data[idx].next);
+                }
+
+                Some(self.list.data[idx].value)
+            } else {
+                // List has been completely traversed
+                None
+            }
+        } else {
+            // List is empty
+            None
+        }
+    }
+}
+
 pub struct LinkedListCirc {
     data: Vec<LLNode>,
     head: Option<usize>,
@@ -159,21 +198,11 @@ impl LinkedListCirc {
     }
 
     pub fn to_vec(&self) -> Vec<u32> {
-        let mut result: Vec<u32> = Vec::new();
+        self.iter().collect()
+    }
 
-        if let Some(head_idx) = self.head {
-            let mut traverse_idx = head_idx;
-            loop {
-                result.push(self.data[traverse_idx].value);
-                traverse_idx = self.data[traverse_idx].next;
-
-                if traverse_idx == head_idx {
-                    break;
-                }
-            }
-        }
-
-        result
+    pub fn iter(&self) -> LLIter {
+        LLIter::new(self)
     }
 }
 
