@@ -50,7 +50,7 @@
 */
 
 use regex::Regex;
-use super::common::*;
+use super::common::Point;
 use std::collections::HashMap;
 
 struct LandingZone {
