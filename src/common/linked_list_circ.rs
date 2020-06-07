@@ -26,7 +26,7 @@ impl LinkedListCirc {
         // If there are any free indexes, use those. Otherwise create a new index.
         if let Some(free_idx) = self.free_list {
             if self.data[free_idx].next == free_idx {
-                // There is only one item in the list
+                // There is only one node in the list
                 self.free_list = None;
             } else {
                 let before_idx = self.data[free_idx].prev;
@@ -34,7 +34,7 @@ impl LinkedListCirc {
                 self.data[before_idx].next = after_idx;
                 self.data[after_idx].prev = before_idx;
 
-                // Free list should now start with the next item
+                // Free list should now start with the next node
                 self.free_list = Some(self.data[free_idx].next);
             }
             free_idx
@@ -128,12 +128,12 @@ impl LinkedListCirc {
         // Adjust head (if needed) before modifying the list
         let head_idx = self.head.unwrap();
         if head_idx == target_idx {
-            // Only need to adjust head if we are removing the head item
+            // Only need to adjust head if we are removing the head node
             if self.data[head_idx].next == head_idx {
-                // List only had one item
+                // List only had one node
                 self.head = None;
             } else {
-                // List had multiple items
+                // List had multiple nodes
                 self.head = Some(self.data[head_idx].next);
             }
         }
@@ -145,10 +145,15 @@ impl LinkedListCirc {
         let existing_value = self.data[target_idx].value;
         self.free_node(target_idx);
 
-        self.data[before_idx].next = after_idx;
-        self.data[after_idx].prev = before_idx;
+        // If we are removing the last node,
+        if self.head == None {
+            self.current_idx = None;
+        } else {
+            self.data[before_idx].next = after_idx;
+            self.data[after_idx].prev = before_idx;
 
-        self.current_idx = Some(after_idx);
+            self.current_idx = Some(after_idx);
+        }
 
         existing_value
     }
@@ -169,5 +174,112 @@ impl LinkedListCirc {
         }
 
         result
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_nodes() {
+        let mut list = LinkedListCirc::new();
+        let node_idx = list.allocate_node();
+        assert_eq!(node_idx, 0);
+        assert_eq!(list.free_list, None);
+
+        let node_idx = list.allocate_node();
+        assert_eq!(node_idx, 1);
+
+        let node_idx = list.allocate_node();
+        assert_eq!(node_idx, 2);
+
+        let node_idx = list.allocate_node();
+        assert_eq!(node_idx, 3);
+
+        list.free_node(0);
+        assert_eq!(list.free_list, Some(0));
+
+        list.free_node(2);
+        assert_eq!(list.free_list, Some(0));
+        assert_eq!(list.data[0].next, 2);
+        assert_eq!(list.data[2].next, 0);
+    }
+
+    #[test]
+    fn test_insert_remove() {
+        let mut list = LinkedListCirc::new();
+        list.insert(0, 0);
+        assert_eq!(list.head, Some(0));
+        assert_eq!(list.current_idx, Some(0));
+
+        list.remove(0);
+        assert_eq!(list.head, None);
+        assert_eq!(list.current_idx, None);
+
+        for i in 0..10 {
+            list.insert(i, 1);
+        }
+        assert_eq!(list.to_vec(), vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+        let mut list = LinkedListCirc::new();
+        list.insert(0, 0);
+        list.insert(1, 0);
+        assert_eq!(list.to_vec(), vec![0, 1]);
+        assert_eq!(list.head, Some(0));
+        assert_eq!(list.current_idx, Some(1));
+
+        list.insert(2, 0);
+        assert_eq!(list.to_vec(), vec![0, 2, 1]);
+        assert_eq!(list.current_idx, Some(2));
+
+        list.insert(3, -1);
+        assert_eq!(list.to_vec(), vec![0, 2, 1, 3]);
+        assert_eq!(list.current_idx, Some(3));
+
+        list.insert(4, -10);
+        assert_eq!(list.to_vec(), vec![0, 4, 2, 1, 3]);
+        assert_eq!(list.current_idx, Some(4));
+
+        let item = list.remove(1);
+        assert_eq!(item, 2);
+        assert_eq!(list.to_vec(), vec![0, 4, 1, 3]);
+        assert_eq!(list.head, Some(0));
+        assert_eq!(list.current_idx, Some(1));
+
+        let item = list.remove(-2);
+        assert_eq!(item, 0);
+        assert_eq!(list.to_vec(), vec![4, 1, 3]);
+        assert_eq!(list.head, Some(4));
+        assert_eq!(list.current_idx, Some(4));
+
+        let item = list.remove(1);
+        assert_eq!(item, 1);
+        assert_eq!(list.to_vec(), vec![4, 3]);
+        assert_eq!(list.head, Some(4));
+        assert_eq!(list.current_idx, Some(3));
+
+        list.insert(5, 1);
+        assert_eq!(list.to_vec(), vec![4, 3, 5]);
+        assert_eq!(list.head, Some(4));
+        assert_eq!(list.current_idx, Some(2)); // Node indexes should be reallocated in the order they were removed
+
+        let item = list.remove(0);
+        assert_eq!(item, 5);
+        assert_eq!(list.to_vec(), vec![4, 3]);
+        assert_eq!(list.head, Some(4));
+        assert_eq!(list.current_idx, Some(4));
+
+        let item = list.remove(7);
+        assert_eq!(item, 3);
+        assert_eq!(list.to_vec(), vec![4]);
+        assert_eq!(list.head, Some(4));
+        assert_eq!(list.current_idx, Some(4));
+
+        let item = list.remove(0);
+        assert_eq!(item, 4);
+        assert_eq!(list.to_vec(), vec![]);
+        assert_eq!(list.head, None);
+        assert_eq!(list.current_idx, None);
     }
 }

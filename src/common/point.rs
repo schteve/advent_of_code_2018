@@ -36,3 +36,65 @@ impl ops::Sub<Point> for Point {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn test_manhattan() {
+        let a = Point { x: 0, y: 0 };
+        let b = Point { x: 0, y: 0 };
+        assert_eq!(Point::manhattan(a, b), 0);
+
+        let a = Point { x: 1, y: 2 };
+        let b = Point { x: 3, y: 4 };
+        assert_eq!(Point::manhattan(a, b), 4);
+
+        let a = Point { x: -1, y: -2 };
+        let b = Point { x: 3, y: 4 };
+        assert_eq!(Point::manhattan(a, b), 10);
+    }
+
+    #[test]
+    fn test_add() {
+        let a = Point { x: 0, y: 0 };
+        let b = Point { x: 0, y: 0 };
+        assert_eq!(a + b, Point { x: 0, y: 0 });
+
+        let a = Point { x: 1, y: 1 };
+        let b = Point { x: 2, y: 2 };
+        assert_eq!(a + b, Point { x: 3, y: 3 });
+
+        let a = Point { x: 1, y: 1 };
+        let b = Point { x: -1, y: -1 };
+        assert_eq!(a + b, Point { x: 0, y: 0 });
+
+        let a = Point { x: 1_000_000_000, y: -1_000_000_000 };
+        let b = Point { x: -1, y: 1 };
+        assert_eq!(a + b, Point { x: 999_999_999, y: -999_999_999 });
+    }
+
+    #[test]
+    fn test_sub() {
+        let a = Point { x: 0, y: 0 };
+        let b = Point { x: 0, y: 0 };
+        assert_eq!(a - b, Point { x: 0, y: 0 });
+
+        let a = Point { x: 1, y: 1 };
+        let b = Point { x: 2, y: 2 };
+        assert_eq!(a - b, Point { x: -1, y: -1 });
+
+        let a = Point { x: 1, y: 1 };
+        let b = Point { x: -1, y: -1 };
+        assert_eq!(a - b, Point { x: 2, y: 2 });
+
+        let a = Point { x: 1_000_000_000, y: -1_000_000_000 };
+        let b = Point { x: -1, y: 1 };
+        assert_eq!(a - b, Point { x: 1_000_000_001, y: -1_000_000_001 });
+
+        let a = Point { x: 0x7FFFFFFF, y: -0x7FFFFFFF };
+        let b = Point { x: 0x7FFFFFFF, y: -0x7FFFFFFF };
+        let c = Point { x: 0x7FFFFFFF, y: -0x7FFFFFFF };
+        assert_eq!(a - b - c, Point { x: -0x7FFFFFFF, y: 0x7FFFFFFF });
+    }
+}
