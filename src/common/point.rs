@@ -26,6 +26,12 @@ impl ops::Add<Point> for Point {
     }
 }
 
+impl ops::AddAssign<Point> for Point {
+    fn add_assign(&mut self, rhs: Point) {
+        *self = *self + rhs;
+    }
+}
+
 impl ops::Sub<Point> for Point {
     type Output = Point;
 
@@ -34,6 +40,12 @@ impl ops::Sub<Point> for Point {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
         }
+    }
+}
+
+impl ops::SubAssign<Point> for Point {
+    fn sub_assign(&mut self, rhs: Point) {
+        *self = *self - rhs;
     }
 }
 
