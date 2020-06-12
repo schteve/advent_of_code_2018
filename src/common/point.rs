@@ -1,4 +1,5 @@
 
+use std::fmt;
 use std::ops;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -46,6 +47,12 @@ impl ops::Sub<Point> for Point {
 impl ops::SubAssign<Point> for Point {
     fn sub_assign(&mut self, rhs: Point) {
         *self = *self - rhs;
+    }
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
     }
 }
 
