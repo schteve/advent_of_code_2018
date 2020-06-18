@@ -1,13 +1,17 @@
 
-pub fn modulo(n: i32, modulus: i32) -> i32 {
-    assert!(modulus > 0);
+use num::Integer;
+
+pub fn modulo<T>(n: T, modulus: T) -> T where
+    T: Copy + Integer + std::ops::AddAssign + std::ops::SubAssign,
+{
+    assert!(modulus > T::zero());
 
     let mut m = n;
 
     let div = n / modulus; // Don't use the % operator because it's messy and this is almost as quick
     m -= div * modulus;
 
-    while m < 0 {
+    while m < T::zero() {
         m += modulus;
     }
     while m >= modulus {
