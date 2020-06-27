@@ -50,6 +50,20 @@ impl Point {
             Cardinal::West => *self + (-count, 0),
         }
     }
+
+    pub fn orthogonals(&self) -> Vec<Self> {
+        vec![*self + (0, -1),
+             *self + (0, 1),
+             *self + (1, 0),
+             *self + (-1, 0)]
+    }
+
+    pub fn diagonals(&self) -> Vec<Self> {
+        vec![*self + (-1, -1),
+             *self + (1, -1),
+             *self + (1, 1),
+             *self + (-1, 1)]
+    }
 }
 
 impl ops::Add<Self> for Point {
