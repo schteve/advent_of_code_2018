@@ -65,6 +65,12 @@ impl Point {
              *self + (-1, 1)]
     }
 
+    pub fn adjacents(&self) -> Vec<Self> {
+        let mut adjacents = self.orthogonals();
+        adjacents.append(&mut self.diagonals());
+        adjacents
+    }
+
     pub fn get_range<'a, I>(values: I) -> Option<((i32, i32), (i32, i32))>
     where
         I: std::iter::IntoIterator<Item=&'a Point>, // Using IntoIterator instead of Iterator allows the user to pass either an iterator or something that can be turned into one
