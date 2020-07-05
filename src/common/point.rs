@@ -64,6 +64,22 @@ impl Point {
              *self + (1, 1),
              *self + (-1, 1)]
     }
+
+    pub fn get_range<'a, I>(values: I) -> Option<((i32, i32), (i32, i32))>
+    where
+        I: std::iter::IntoIterator<Item=&'a Point>, // Using IntoIterator instead of Iterator allows the user to pass either an iterator or something that can be turned into one
+    {
+        let mut point_iter = values.into_iter(); // Note: if 'values' is an Iterator it will just return itself here
+        if let Some(point) = point_iter.next() {
+            let range = point_iter.fold(((point.x, point.x), (point.y, point.y)),
+                |(acc_x, acc_y), p|
+                    ((acc_x.0.min(p.x), acc_x.1.max(p.x)),
+                    (acc_y.0.min(p.y), acc_y.1.max(p.y))));
+            Some(range)
+        } else {
+            None
+        }
+    }
 }
 
 impl ops::Add<Self> for Point {
@@ -258,5 +274,46 @@ mod test {
         let b = Point { x: 0x7FFFFFFF, y: -0x7FFFFFFF };
         let c = Point { x: 0x7FFFFFFF, y: -0x7FFFFFFF };
         assert_eq!(a - b - c, Point { x: -0x7FFFFFFF, y: 0x7FFFFFFF });
+    }
+
+    #[test]
+    fn test_get_range() {
+        let points = Vec::new();
+        let range = Point::get_range(&points);
+        assert_eq!(range, None);
+
+        let points = vec![Point { x: 0, y: 0 }];
+        let range = Point::get_range(&points);
+        assert_eq!(range, Some(((0, 0), (0, 0))));
+
+        let points = vec![Point { x: -5, y: 0 },
+                          Point { x: 0, y: 7 },
+                          Point { x: 4, y: 4 }];
+        let range = Point::get_range(&points);
+        assert_eq!(range, Some(((-5, 4), (0, 7))));
+
+        let points = vec![Point { x: 24,  y: -86 },
+                          Point { x: -80, y: 33 },
+                          Point { x: 16,  y: -81 },
+                          Point { x: 59,  y: 14 },
+                          Point { x: -97, y: -7 },
+                          Point { x: 73,  y: -40 },
+                          Point { x: 16,  y: -29 },
+                          Point { x: 5,   y: 69 },
+                          Point { x: 2,   y: 22 }];
+        let range = Point::get_range(&points);
+        assert_eq!(range, Some(((-97, 73), (-86, 69))));
+
+        let points = vec![Point { x: 311147, y: 388530 },
+                          Point { x: 459992, y: 742648 },
+                          Point { x: 307738, y: 247421 },
+                          Point { x: 132960, y: 182207 },
+                          Point { x: 822741, y: 727272 },
+                          Point { x: 979388, y: 603831 },
+                          Point { x: 784738, y: 563251 },
+                          Point { x: 696914, y: 315058 },
+                          Point { x: 449283, y: 180916 }];
+        let range = Point::get_range(&points);
+        assert_eq!(range, Some(((132960, 979388), (180916, 742648))));
     }
 }
