@@ -64,7 +64,7 @@ impl Grid {
     fn new(size: u32) -> Self {
         Self {
             power: HashMap::new(),
-            size: size,
+            size,
         }
     }
 

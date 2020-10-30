@@ -70,7 +70,7 @@ struct Fabric {
 }
 
 impl Fabric {
-    fn from_claims(claims: &Vec<Claim>) -> Self {
+    fn from_claims(claims: &[Claim]) -> Self {
         let mut area = HashMap::new();
 
         for claim in claims {
@@ -84,7 +84,7 @@ impl Fabric {
         }
 
         Self {
-            area: area,
+            area,
         }
     }
 

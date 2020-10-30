@@ -1,4 +1,6 @@
 
+use std::cmp::Ordering;
+
 struct LLNode {
     prev: usize,
     next: usize,
@@ -13,7 +15,7 @@ pub struct LLIter<'a> {
 impl<'a> LLIter<'a> {
     fn new(list: &'a LinkedListCirc) -> Self {
         Self {
-            list: list,
+            list,
             index: list.head,
         }
     }
@@ -121,14 +123,18 @@ impl LinkedListCirc {
 
         // Move to the target node's index - here we use the "after" node as the target
         let mut target_idx = self.current_idx.unwrap();
-        if offset > 0 {
-            for _ in 0..offset {
-                target_idx = self.data[target_idx].next;
+        match offset.cmp(&0) {
+            Ordering::Greater => {
+                for _ in 0..offset {
+                    target_idx = self.data[target_idx].next;
+                }
             }
-        } else if offset < 0 {
-            for _ in offset..0 {
-                target_idx = self.data[target_idx].prev;
+            Ordering::Less => {
+                for _ in offset..0 {
+                    target_idx = self.data[target_idx].prev;
+                }
             }
+            Ordering::Equal => (),
         }
 
         // Create the new node, then fixup the previous and next nodes
@@ -154,14 +160,18 @@ impl LinkedListCirc {
 
         // Move to the target node's index
         let mut target_idx = self.current_idx.unwrap();
-        if offset > 0 {
-            for _ in 0..offset {
-                target_idx = self.data[target_idx].next;
+        match offset.cmp(&0) {
+            Ordering::Greater => {
+                for _ in 0..offset {
+                    target_idx = self.data[target_idx].next;
+                }
             }
-        } else if offset < 0 {
-            for _ in offset..0 {
-                target_idx = self.data[target_idx].prev;
+            Ordering::Less => {
+                for _ in offset..0 {
+                    target_idx = self.data[target_idx].prev;
+                }
             }
+            Ordering::Equal => (),
         }
 
         // Adjust head (if needed) before modifying the list

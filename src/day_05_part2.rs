@@ -15,6 +15,8 @@
     What is the length of the shortest polymer you can produce by removing all units of exactly one type and fully reacting the result?
 */
 
+use std::fmt;
+
 fn check_destroy(a: char, b: char) -> bool {
     if (a == b.to_ascii_lowercase() && a.to_ascii_uppercase() == b) ||
        (a == b.to_ascii_uppercase() && a.to_ascii_lowercase() == b) {
@@ -34,10 +36,6 @@ impl Polymer {
         Self {
             units: input.trim().chars().collect(),
         }
-    }
-
-    fn to_string(&self) -> String {
-        self.units.iter().collect()
     }
 
     fn length(&self) -> u32 {
@@ -107,6 +105,16 @@ impl Polymer {
         self.units = best.units;
     }
 }
+
+impl fmt::Display for Polymer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for &unit in &self.units {
+            write!(f, "{}", unit)?;
+        }
+        Ok(())
+    }
+}
+
 
 #[aoc(day5, part2)]
 pub fn solve(input: &str) -> u32 {

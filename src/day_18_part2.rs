@@ -58,7 +58,7 @@ impl Construction {
         assert_eq!(size, (range.1).1 - (range.1).0 + 1);
 
         Self {
-            tiles: tiles,
+            tiles,
             size: size as usize,
         }
     }
@@ -141,7 +141,7 @@ impl fmt::Display for Construction {
                     write!(f, " ")?;
                 }
             }
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
 
         Ok(())

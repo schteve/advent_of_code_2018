@@ -212,14 +212,14 @@ impl GeologicMap {
         tiles.insert(spring, Tile::Spring);
 
         Self {
-            tiles: tiles,
+            tiles,
             x_range: range.0,
             y_range: range.1,
-            spring: spring,
+            spring,
         }
     }
 
-    fn fill_path(&mut self, points: &Vec<Point>, tile: Tile) {
+    fn fill_path(&mut self, points: &[Point], tile: Tile) {
         let k_v_iter = points.iter()
             .cloned()
             .map(|point| (point, tile));
@@ -263,7 +263,7 @@ impl GeologicMap {
         // If we can't move down, move sideways in both directions.
         // If it's blocked on both sides then the water is contained and we end.
         // If it's not blocked on at least one side, the water runs off the side(s) and the sand becomes dried.
-        while path.len() > 0 {
+        while path.is_empty() == false {
             let head = path[path.len() - 1];
             let point_below = head.step(Cardinal::South, 1);
             if point_below.y > self.y_range.1 {
@@ -323,7 +323,7 @@ impl GeologicMap {
             sources.sort(); // This is on balance faster than using a HashSet or BTreeSet to perform deduplication
             sources.dedup();
 
-            if sources.len() == 0 {
+            if sources.is_empty() == true {
                 if snapshot == self.to_string() {
                     // No change during this iteration, we're done
                     break;
@@ -356,7 +356,7 @@ impl fmt::Display for GeologicMap {
                     write!(f, ".")?;
                 }
             }
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
         Ok(())
     }

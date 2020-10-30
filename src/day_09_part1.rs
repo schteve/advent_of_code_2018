@@ -74,9 +74,9 @@ impl Game {
         state.push(0);
 
         Self {
-            max_player: max_player,
-            max_marble: max_marble,
-            state: state,
+            max_player,
+            max_marble,
+            state,
             current_player: 0,
             current_marble: 0,
             player_score: vec![0; max_player as usize],

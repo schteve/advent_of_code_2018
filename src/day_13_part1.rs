@@ -253,8 +253,8 @@ impl TrackMap {
         }
 
         Self {
-            tracks: tracks,
-            carts: carts,
+            tracks,
+            carts,
         }
     }
 
@@ -330,7 +330,7 @@ impl TrackMap {
                     ((acc_x.0.min(p.x), acc_x.1.max(p.x)),
                      (acc_y.0.min(p.y), acc_y.1.max(p.y))))
         } else {
-            return ((0, 0), (0, 0));
+            ((0, 0), (0, 0))
         }
     }
 }
@@ -343,17 +343,15 @@ impl fmt::Display for TrackMap {
                 let p = Point { x, y };
                 if let Some(cart) = self.carts.iter().find(|c| c.location == p) {
                     write!(f, "{}", cart.orientation.to_arrow())?;
+                } else if let Some(track) = self.tracks.get(&p) {
+                    write!(f, "{}", track.to_char())?;
                 } else {
-                    if let Some(track) = self.tracks.get(&p) {
-                        write!(f, "{}", track.to_char())?;
-                    } else {
-                        write!(f, ".")?;
-                    }
+                    write!(f, ".")?;
                 }
             }
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
-        writeln!(f, "")
+        writeln!(f)
     }
 }
 

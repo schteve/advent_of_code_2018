@@ -69,7 +69,7 @@ impl LandingZone {
                                             })
                                         .collect();
         Self {
-            coordinates: coordinates,
+            coordinates,
             area: HashMap::new(),
         }
     }
@@ -107,7 +107,7 @@ impl LandingZone {
         let (x_range, y_range) = self.get_range();
         for y in y_range.0 ..= y_range.1 {
             for x in x_range.0 ..= x_range.1 {
-                let p = Point { x: x, y: y };
+                let p = Point { x, y };
                 let closest = self.closest_coord(p);
                 self.area.insert(p, closest);
             }
@@ -125,21 +125,21 @@ impl LandingZone {
         let y_range = (y_range.0 - 1, y_range.1 + 1);
         // Top and bottom
         for x in x_range.0 ..= x_range.1 {
-            let p = Point { x: x, y: y_range.0 };
+            let p = Point { x, y: y_range.0 };
             let closest = self.closest_coord(p);
             self.area.insert(p, closest);
 
-            let p = Point { x: x, y: y_range.1 };
+            let p = Point { x, y: y_range.1 };
             let closest = self.closest_coord(p);
             self.area.insert(p, closest);
         }
         // Left and right
         for y in y_range.0 ..= y_range.1 {
-            let p = Point { x: x_range.0, y: y };
+            let p = Point { x: x_range.0, y };
             let closest = self.closest_coord(p);
             self.area.insert(p, closest);
 
-            let p = Point { x: x_range.1, y: y };
+            let p = Point { x: x_range.1, y };
             let closest = self.closest_coord(p);
             self.area.insert(p, closest);
         }

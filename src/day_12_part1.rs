@@ -66,6 +66,7 @@
 */
 
 use regex::Regex;
+use std::fmt;
 
 #[derive(Clone)]
 struct Pots {
@@ -87,16 +88,9 @@ impl Pots {
             .collect();
 
             Self {
-                pots: pots,
+                pots,
                 first_pot: 0,
             }
-    }
-
-    fn to_string(&self) -> String {
-        let (pots, _) = self.trim();
-        pots.iter()
-            .map(|&pot| if pot == true { '#' } else { '.' })
-            .collect()
     }
 
     fn trim(&self) -> (&[bool], usize) {
@@ -130,6 +124,16 @@ impl Pots {
     }
 }
 
+impl fmt::Display for Pots {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (pots, _) = self.trim();
+        for &pot in pots {
+            write!(f, "{}", if pot == true { '#' } else { '.' })?;
+        }
+        Ok(())
+    }
+}
+
 struct Tunnel {
     pots: Pots,
     rules: Vec<bool>
@@ -151,7 +155,7 @@ impl Tunnel {
 
         Self {
             pots: Pots::from_string(&caps[1]),
-            rules: rules,
+            rules,
         }
     }
 

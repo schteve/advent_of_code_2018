@@ -24,7 +24,7 @@
 
 use std::collections::HashSet;
 
-fn find_first_repeat(frequencies: &Vec<i32>) -> i32 {
+fn find_first_repeat(frequencies: &[i32]) -> i32 {
     let mut result = 0;
     let mut result_set: HashSet<i32> = HashSet::new();
     result_set.insert(result);

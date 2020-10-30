@@ -38,13 +38,13 @@ fn count_duplicates(box_id: &str) -> (bool, bool) {
     (has_2, has_3)
 }
 
-fn get_all_duplicates(box_ids: &Vec<&str>) -> Vec<(bool, bool)> {
+fn get_all_duplicates(box_ids: &[&str]) -> Vec<(bool, bool)> {
     box_ids.iter()
         .map(|box_id| count_duplicates(box_id))
         .collect()
 }
 
-fn checksum(duplicates: &Vec<(bool, bool)>) -> u32 {
+fn checksum(duplicates: &[(bool, bool)]) -> u32 {
     let (twos, threes): (Vec<bool>, Vec<bool>) = duplicates.iter().cloned().unzip();
     let twos_count = twos.iter().filter(|&&b| b == true).count() as u32;
     let threes_count = threes.iter().filter(|&&b| b == true).count() as u32;

@@ -23,6 +23,8 @@
     How many units remain after fully reacting the polymer you scanned?
 */
 
+use std::fmt;
+
 fn check_destroy(a: char, b: char) -> bool {
     if (a == b.to_ascii_lowercase() && a.to_ascii_uppercase() == b) ||
        (a == b.to_ascii_uppercase() && a.to_ascii_lowercase() == b) {
@@ -41,10 +43,6 @@ impl Polymer {
         Self {
             units: input.trim().chars().collect(),
         }
-    }
-
-    fn to_string(&self) -> String {
-        self.units.iter().collect()
     }
 
     fn length(&self) -> u32 {
@@ -95,6 +93,15 @@ impl Polymer {
                 prev_len = self.units.len();
             }
         }
+    }
+}
+
+impl fmt::Display for Polymer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for &unit in &self.units {
+            write!(f, "{}", unit)?;
+        }
+        Ok(())
     }
 }
 

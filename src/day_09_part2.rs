@@ -28,9 +28,9 @@ impl Game {
         state.insert(0, 0);
 
         Self {
-            max_player: max_player,
-            max_marble: max_marble,
-            state: state,
+            max_player,
+            max_marble,
+            state,
             current_player: 0,
             player_score: vec![0; max_player as usize],
         }
@@ -56,7 +56,7 @@ impl Game {
                 self.state.insert(marble_number, 2);
             }
 
-            self.current_player = self.current_player + 1;
+            self.current_player += 1;
             if self.current_player >= self.max_player {
                 self.current_player = 0;
             }

@@ -43,7 +43,7 @@ struct Instruction {
 
 impl Instruction {
     fn from_string(input: &str) -> Self {
-        let mut split = input.trim().split(" ");
+        let mut split = input.trim().split(' ');
 
         Self {
             opcode:   split.next().unwrap().parse::<u8>().unwrap(),
@@ -347,12 +347,12 @@ impl ChronalComputer {
 
         Self {
             state: State([0, 0, 0, 0]),
-            program: program,
-            opcode_lookup: opcode_lookup,
+            program,
+            opcode_lookup,
         }
     }
 
-    fn deduce_opcodes(samples: &Vec<Sample>) -> [u8; 16] {
+    fn deduce_opcodes(samples: &[Sample]) -> [u8; 16] {
         let mut decoded: [Option<u8>; 16] = [None; 16]; // A mapping of opcode to function code
 
         let mut sample_func_codes: Vec<Vec<u8>> = samples.iter()
@@ -367,7 +367,7 @@ impl ChronalComputer {
                 // for the opcode.
                 if let Some(d) = decoded[sample.op.opcode as usize] {
                     // Opcode is known. Verify consistency.
-                    if func_codes.len() > 0 {
+                    if func_codes.is_empty() == false {
                         assert!(func_codes.contains(&d) == true);
                     }
                     func_codes.clear();

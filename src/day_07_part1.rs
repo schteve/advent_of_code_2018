@@ -56,33 +56,33 @@ impl Instructions {
             let parent = cap[1].chars().next().unwrap();
             let child = cap[2].chars().next().unwrap();
 
-            let children = graph.entry(parent).or_insert(Vec::new());
+            let children = graph.entry(parent).or_insert_with(Vec::new);
             children.push(child);
 
-            let req_list = reqs.entry(child).or_insert(Vec::new());
+            let req_list = reqs.entry(child).or_insert_with(Vec::new);
             req_list.push(parent);
         }
 
         // Sorting now makes later jobs easier
         for children in graph.values_mut() {
-            children.sort();
+            children.sort_unstable();
         }
         for req_list in reqs.values_mut() {
-            req_list.sort();
+            req_list.sort_unstable();
         }
 
         // Find the end step(s) - any children that are not also parents
-        let children: Vec<char> = graph.keys().map(|&k| k).collect();
-        let mut parents: Vec<char> = graph.values().cloned().flat_map(|v| v).collect();
-        parents.sort();
+        let children: Vec<char> = graph.keys().copied().collect();
+        let mut parents: Vec<char> = graph.values().cloned().flatten().collect();
+        parents.sort_unstable();
         parents.dedup();
-        let mut root: Vec<char> = children.iter().filter(|&&p| parents.contains(&p) == false).map(|&p| p).collect();
-        root.sort();
+        let mut root: Vec<char> = children.iter().filter(|&&p| parents.contains(&p) == false).copied().collect();
+        root.sort_unstable();
 
         Self {
-            graph: graph,
-            reqs: reqs,
-            root: root,
+            graph,
+            reqs,
+            root,
         }
     }
 
@@ -90,7 +90,7 @@ impl Instructions {
         let mut order = Vec::new();
 
         let mut frontier: Vec<char> = self.root.clone();
-        while frontier.len() > 0 {
+        while frontier.is_empty() == false {
             let next = frontier.remove(0);
             order.push(next);
 
@@ -101,7 +101,7 @@ impl Instructions {
                         frontier.push(child);
                     }
                 }
-                frontier.sort();
+                frontier.sort_unstable();
                 frontier.dedup();
             }
         }

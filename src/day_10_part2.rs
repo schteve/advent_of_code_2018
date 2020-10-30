@@ -6,6 +6,7 @@
 */
 
 use regex::Regex;
+use std::fmt;
 use super::common::Point;
 
 struct StarMap {
@@ -34,32 +35,13 @@ impl StarMap {
         }
 
         Self {
-            stars: stars,
-            velocity: velocity,
+            stars,
+            velocity,
         }
-    }
-
-    fn to_string(&self) -> String {
-        let mut s = String::new();
-
-        let (x_range, y_range) = self.get_range();
-        s.push_str("\n");
-        for y in y_range.0 ..= y_range.1 {
-            for x in x_range.0 ..= x_range.1 {
-                let p = Point { x: x, y: y };
-                if self.stars.contains(&p) == true {
-                    s.push('#');
-                } else {
-                    s.push('.');
-                }
-            }
-            s.push_str("\n");
-        }
-        s
     }
 
     fn get_range(&self) -> ((i32, i32), (i32, i32)) {
-        if self.stars.len() == 0 {
+        if self.stars.is_empty() == true {
             return ((0, 0), (0, 0));
         }
 
@@ -120,6 +102,25 @@ impl StarMap {
             }
         }
         count
+    }
+}
+
+impl fmt::Display for StarMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f)?;
+        let (x_range, y_range) = self.get_range();
+        for y in y_range.0 ..= y_range.1 {
+            for x in x_range.0 ..= x_range.1 {
+                let p = Point { x, y };
+                if self.stars.contains(&p) == true {
+                    write!(f, "#")?;
+                } else {
+                    write!(f, ".")?;
+                }
+            }
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }
 

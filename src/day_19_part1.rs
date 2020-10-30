@@ -96,7 +96,7 @@ struct Instruction {
 
 impl Instruction {
     fn from_string(input: &str) -> Option<Self> {
-        let mut split = input.trim().split(" ");
+        let mut split = input.trim().split(' ');
 
         let opcode = match split.next().unwrap() {
             "addr" => 0,
@@ -134,7 +134,7 @@ impl Instruction {
         }
 
         Some(Self {
-            opcode:   opcode,
+            opcode,
             input_a:  input_a.unwrap(),
             input_b:  input_b.unwrap(),
             output_c: output_c.unwrap(),
@@ -394,8 +394,8 @@ impl ChronalComputer {
 
         Self {
             state: State([0; NUM_REGISTERS]),
-            program: program,
-            ip_reg: ip_reg,
+            program,
+            ip_reg,
             ip: 0,
         }
     }

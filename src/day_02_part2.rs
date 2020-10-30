@@ -21,7 +21,7 @@ fn calculate_difference(id1: &str, id2: &str) -> u32 {
     (id1.len() - count_same) as u32
 }
 
-fn find_correct_boxes(box_ids: &Vec<&str>) -> (usize, usize) {
+fn find_correct_boxes(box_ids: &[&str]) -> (usize, usize) {
     for i in 0..box_ids.len() {
         for j in 0..box_ids.len() {
             let difference = calculate_difference(box_ids[i], box_ids[j]);

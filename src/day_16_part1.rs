@@ -99,7 +99,7 @@ struct Instruction {
 
 impl Instruction {
     fn from_string(input: &str) -> Self {
-        let mut split = input.trim().split(" ");
+        let mut split = input.trim().split(' ');
 
         Self {
             opcode:   split.next().unwrap().parse::<u8>().unwrap(),
@@ -380,7 +380,7 @@ impl Sample {
     }
 }
 
-fn count_ambiguous_opcodes(samples: &Vec<Sample>) -> u32 {
+fn count_ambiguous_opcodes(samples: &[Sample]) -> u32 {
     samples.iter()
         .map(|sample| sample.find_possible_opcodes())
         .filter(|func_codes| func_codes.len() >= 3)

@@ -64,10 +64,10 @@ impl Cardinal {
 impl fmt::Display for Cardinal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::North => write!(f, "{}", "North"),
-            Self::South => write!(f, "{}", "South"),
-            Self::East  => write!(f, "{}", "East"),
-            Self::West  => write!(f, "{}", "West"),
+            Self::North => write!(f, "North"),
+            Self::South => write!(f, "South"),
+            Self::East  => write!(f, "East"),
+            Self::West  => write!(f, "West"),
         }
     }
 }
@@ -81,8 +81,8 @@ pub enum Turn {
 impl fmt::Display for Turn {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::Left  => write!(f, "{}", "L"),
-            Self::Right => write!(f, "{}", "R"),
+            Self::Left  => write!(f, "L"),
+            Self::Right => write!(f, "R"),
         }
     }
 }

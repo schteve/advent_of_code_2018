@@ -98,7 +98,7 @@ struct Schedule {
 }
 
 impl Schedule {
-    fn from_records(records: &Vec<Record>) -> Self {
+    fn from_records(records: &[Record]) -> Self {
         let mut timelines: HashMap<u32, Vec<u32>> = HashMap::new();
 
         let mut guard_id: Option<u32> = None;
@@ -108,7 +108,7 @@ impl Schedule {
                 GuardAction::BeginShift(g_id) => guard_id = Some(g_id),
                 GuardAction::FallAsleep => asleep_time = Some(r.timestamp),
                 GuardAction::WakeUp => {
-                    let timeline = timelines.entry(guard_id.unwrap()).or_insert(vec![0; 60]);
+                    let timeline = timelines.entry(guard_id.unwrap()).or_insert_with(|| vec![0; 60]);
                     for m in asleep_time.unwrap().minute .. r.timestamp.minute {
                         timeline[m as usize] += 1;
                     }
@@ -117,7 +117,7 @@ impl Schedule {
         }
 
         Self {
-            timelines: timelines,
+            timelines,
         }
     }
 

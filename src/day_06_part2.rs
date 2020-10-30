@@ -69,7 +69,7 @@ impl LandingZone {
                                             })
                                         .collect();
         Self {
-            coordinates: coordinates,
+            coordinates,
             area: HashMap::new(),
         }
     }
@@ -105,7 +105,7 @@ impl LandingZone {
         let (x_range, y_range) = self.get_range();
         for y in y_range.0 ..= y_range.1 {
             for x in x_range.0 ..= x_range.1 {
-                let p = Point { x: x, y: y };
+                let p = Point { x, y };
                 let total_distance = self.total_distance(p);
                 self.area.insert(p, total_distance);
             }
@@ -123,8 +123,9 @@ impl LandingZone {
 pub fn solve(input: &str) -> usize {
     let mut landing_zone = LandingZone::from_string(input);
     landing_zone.scan();
-    let region_size = landing_zone.count_points_under_size(10000);
-    println!("Region under {}: {}", 10000, region_size);
+    let max_size = 10000;
+    let region_size = landing_zone.count_points_under_size(max_size);
+    println!("Region under {}: {}", max_size, region_size);
     assert_eq!(region_size, 43852);
     region_size
 }

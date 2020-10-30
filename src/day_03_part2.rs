@@ -36,7 +36,7 @@ struct Fabric {
 }
 
 impl Fabric {
-    fn from_claims(claims: &Vec<Claim>) -> Self {
+    fn from_claims(claims: &[Claim]) -> Self {
         let mut area = HashMap::new();
 
         for claim in claims {
@@ -50,7 +50,7 @@ impl Fabric {
         }
 
         Self {
-            area: area,
+            area,
         }
     }
 
@@ -72,7 +72,7 @@ impl Fabric {
         true
     }
 
-    fn find_intact_claim(&self, claims: &Vec<Claim>) -> u32 {
+    fn find_intact_claim(&self, claims: &[Claim]) -> u32 {
         for claim in claims {
             let intact = self.is_claim_intact(claim);
             if intact == true {

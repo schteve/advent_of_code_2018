@@ -26,7 +26,7 @@ struct Node {
 
 impl Node {
     fn from_string(input: &str) -> Self {
-        let input_vec: Vec<u32> = input.split(" ").map(|s| s.trim().parse::<u32>().unwrap()).collect();
+        let input_vec: Vec<u32> = input.split(' ').map(|s| s.trim().parse::<u32>().unwrap()).collect();
         let (node, consumed) = Node::from_slice(&input_vec);
         assert_eq!(consumed, input_vec.len()); // Check that we used every byte. Not strictly necessary but should be valid for this puzzle.
         node
@@ -66,7 +66,7 @@ impl Node {
     }
 
     fn value(&self) -> u32 {
-        if self.children.len() == 0 {
+        if self.children.is_empty() == true {
             return self.metadata.iter().sum();
         }
 
