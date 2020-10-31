@@ -71,14 +71,14 @@ impl Instructions {
         let mut parents: Vec<char> = graph.values().cloned().flatten().collect();
         parents.sort_unstable();
         parents.dedup();
-        let mut root: Vec<char> = children.iter().filter(|&&p| parents.contains(&p) == false).copied().collect();
+        let mut root: Vec<char> = children
+            .iter()
+            .filter(|&&p| parents.contains(&p) == false)
+            .copied()
+            .collect();
         root.sort_unstable();
 
-        Self {
-            graph,
-            reqs,
-            root,
-        }
+        Self { graph, reqs, root }
     }
 
     fn emit_order_and_time(&self, num_workers: u8, ascii_offset: u8) -> (String, u32) {
@@ -98,7 +98,12 @@ impl Instructions {
             }
 
             // Fast forward to the next time a job is done
-            let shortest_job = workers.iter().filter_map(|&w| w).map(|w| w.1).min().unwrap();
+            let shortest_job = workers
+                .iter()
+                .filter_map(|&w| w)
+                .map(|w| w.1)
+                .min()
+                .unwrap();
             for worker in workers.iter_mut() {
                 if worker.is_some() == true {
                     let (job, time) = worker.unwrap();
@@ -110,7 +115,12 @@ impl Instructions {
                         // Add any children to the frontier if they haven't already been visited
                         if let Some(children) = self.graph.get(&job) {
                             for &child in children {
-                                let is_ready = self.reqs.get(&child).unwrap().iter().all(|req| order.contains(req));
+                                let is_ready = self
+                                    .reqs
+                                    .get(&child)
+                                    .unwrap()
+                                    .iter()
+                                    .all(|req| order.contains(req));
                                 if is_ready == true {
                                     frontier.push(child);
                                 }
@@ -136,7 +146,8 @@ impl Instructions {
 pub fn solve(input: &str) -> u32 {
     let instructions = Instructions::from_string(input);
     let (_order, total_time) = instructions.emit_order_and_time(5, 4); // 5 workers, and ASCII 'A' is 65 but we want it to be 61
-    //println!("Order: {}", order);
+
+    //println!("Order: {}", _order);
     println!("Total time: {}", total_time);
     assert_eq!(total_time, 908);
     total_time

@@ -81,7 +81,10 @@ impl Grid {
     fn fuel_grid(&mut self, serial: i32) {
         for x in 0..self.size {
             for y in 0..self.size {
-                let p = Point { x: x as i32, y: y as i32 };
+                let p = Point {
+                    x: x as i32,
+                    y: y as i32,
+                };
                 let power = Grid::power_level(p, serial);
                 self.power.insert(p, power);
             }
@@ -89,24 +92,27 @@ impl Grid {
     }
 
     fn total_power(&self, p: Point) -> i32 {
-        (0..3).flat_map(|x|
-            (0..3).map(move |y|
-                Point {
+        (0..3)
+            .flat_map(|x| {
+                (0..3).map(move |y| Point {
                     x: p.x + x,
                     y: p.y + y,
-                }
-            )
-        ).map(|p| self.power[&p]).sum()
+                })
+            })
+            .map(|p| self.power[&p])
+            .sum()
     }
 
     fn max_power_point(&self) -> Point {
-        (0 .. (self.size - 2)).flat_map(|x|
-            (0 .. (self.size - 2)).map(move |y|
-                Point { x: x as i32, y: y as i32 }
-            )
-        ).max_by_key(
-            |&p| self.total_power(p)
-        ).unwrap()
+        (0..(self.size - 2))
+            .flat_map(|x| {
+                (0..(self.size - 2)).map(move |y| Point {
+                    x: x as i32,
+                    y: y as i32,
+                })
+            })
+            .max_by_key(|&p| self.total_power(p))
+            .unwrap()
     }
 }
 

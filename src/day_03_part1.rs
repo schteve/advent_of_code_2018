@@ -57,10 +57,14 @@ impl Claim {
 
         Self {
             id: caps[1].parse::<u32>().unwrap(),
-            location: (caps[2].parse::<u32>().unwrap(),
-                       caps[3].parse::<u32>().unwrap()),
-            size: (caps[4].parse::<u32>().unwrap(),
-                   caps[5].parse::<u32>().unwrap(),)
+            location: (
+                caps[2].parse::<u32>().unwrap(),
+                caps[3].parse::<u32>().unwrap(),
+            ),
+            size: (
+                caps[4].parse::<u32>().unwrap(),
+                caps[5].parse::<u32>().unwrap(),
+            ),
         }
     }
 }
@@ -83,15 +87,11 @@ impl Fabric {
             }
         }
 
-        Self {
-            area,
-        }
+        Self { area }
     }
 
     fn count_overlap(&self) -> u32 {
-        self.area.values()
-                .filter(|&&count| count > 1)
-                .count() as u32
+        self.area.values().filter(|&&count| count > 1).count() as u32
     }
 }
 
@@ -112,9 +112,11 @@ mod test {
 
     #[test]
     fn test_count_overlap() {
-        let claims = vec![Claim::from_string("#1 @ 1,3: 4x4"),
-                          Claim::from_string("#2 @ 3,1: 4x4"),
-                          Claim::from_string("#3 @ 5,5: 2x2")];
+        let claims = vec![
+            Claim::from_string("#1 @ 1,3: 4x4"),
+            Claim::from_string("#2 @ 3,1: 4x4"),
+            Claim::from_string("#3 @ 5,5: 2x2"),
+        ];
         let fabric = Fabric::from_claims(&claims);
         let overlap = fabric.count_overlap();
         assert_eq!(overlap, 4);

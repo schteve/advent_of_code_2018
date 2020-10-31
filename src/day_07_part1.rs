@@ -76,14 +76,14 @@ impl Instructions {
         let mut parents: Vec<char> = graph.values().cloned().flatten().collect();
         parents.sort_unstable();
         parents.dedup();
-        let mut root: Vec<char> = children.iter().filter(|&&p| parents.contains(&p) == false).copied().collect();
+        let mut root: Vec<char> = children
+            .iter()
+            .filter(|&&p| parents.contains(&p) == false)
+            .copied()
+            .collect();
         root.sort_unstable();
 
-        Self {
-            graph,
-            reqs,
-            root,
-        }
+        Self { graph, reqs, root }
     }
 
     fn emit_order(&self) -> String {
@@ -96,7 +96,12 @@ impl Instructions {
 
             if let Some(children) = self.graph.get(&next) {
                 for &child in children {
-                    let is_ready = self.reqs.get(&child).unwrap().iter().all(|req| order.contains(req));
+                    let is_ready = self
+                        .reqs
+                        .get(&child)
+                        .unwrap()
+                        .iter()
+                        .all(|req| order.contains(req));
                     if is_ready == true {
                         frontier.push(child);
                     }

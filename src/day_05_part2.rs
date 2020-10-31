@@ -18,8 +18,9 @@
 use std::fmt;
 
 fn check_destroy(a: char, b: char) -> bool {
-    if (a == b.to_ascii_lowercase() && a.to_ascii_uppercase() == b) ||
-       (a == b.to_ascii_uppercase() && a.to_ascii_lowercase() == b) {
+    if (a == b.to_ascii_lowercase() && a.to_ascii_uppercase() == b)
+        || (a == b.to_ascii_uppercase() && a.to_ascii_lowercase() == b)
+    {
         true
     } else {
         false
@@ -69,10 +70,10 @@ impl Polymer {
 
         let mut i = 0;
         self.units.retain(|_| {
-                let tmp = i;
-                i += 1;
-                keep[tmp]
-            });
+            let tmp = i;
+            i += 1;
+            keep[tmp]
+        });
     }
 
     fn react_all(&mut self) {
@@ -89,19 +90,21 @@ impl Polymer {
     }
 
     fn remove_unit(&mut self, unit: char) {
-        self.units.retain(|&c| c != unit && c != unit.to_ascii_uppercase());
+        self.units
+            .retain(|&c| c != unit && c != unit.to_ascii_uppercase());
     }
 
     fn improve(&mut self) {
-        let best = "abcdefghijklmnopqrstuvwxyz".chars()
-                                            .map(|c| {
-                                                    let mut p = self.clone();
-                                                    p.remove_unit(c);
-                                                    p.react_all();
-                                                    p
-                                                })
-                                            .min_by_key(|p| p.length())
-                                            .unwrap();
+        let best = "abcdefghijklmnopqrstuvwxyz"
+            .chars()
+            .map(|c| {
+                let mut p = self.clone();
+                p.remove_unit(c);
+                p.react_all();
+                p
+            })
+            .min_by_key(|p| p.length())
+            .unwrap();
         self.units = best.units;
     }
 }
@@ -114,7 +117,6 @@ impl fmt::Display for Polymer {
         Ok(())
     }
 }
-
 
 #[aoc(day5, part2)]
 pub fn solve(input: &str) -> u32 {

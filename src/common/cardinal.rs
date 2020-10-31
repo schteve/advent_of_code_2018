@@ -1,4 +1,3 @@
-
 use std::fmt;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -24,29 +23,25 @@ impl Cardinal {
         match *self {
             Self::North => '^',
             Self::South => 'v',
-            Self::East  => '>',
-            Self::West  => '<',
+            Self::East => '>',
+            Self::West => '<',
         }
     }
 
     pub fn turn(&self, dir: Turn) -> Self {
         match dir {
-            Turn::Left => {
-                match *self {
-                    Self::North => Self::West,
-                    Self::South => Self::East,
-                    Self::East  => Self::North,
-                    Self::West  => Self::South,
-                }
+            Turn::Left => match *self {
+                Self::North => Self::West,
+                Self::South => Self::East,
+                Self::East => Self::North,
+                Self::West => Self::South,
             },
 
-            Turn::Right => {
-                match *self {
-                    Self::North => Self::East,
-                    Self::South => Self::West,
-                    Self::East  => Self::South,
-                    Self::West  => Self::North,
-                }
+            Turn::Right => match *self {
+                Self::North => Self::East,
+                Self::South => Self::West,
+                Self::East => Self::South,
+                Self::West => Self::North,
             },
         }
     }
@@ -55,8 +50,8 @@ impl Cardinal {
         match *self {
             Self::North => Self::South,
             Self::South => Self::North,
-            Self::East  => Self::West,
-            Self::West  => Self::East,
+            Self::East => Self::West,
+            Self::West => Self::East,
         }
     }
 }
@@ -66,8 +61,8 @@ impl fmt::Display for Cardinal {
         match *self {
             Self::North => write!(f, "North"),
             Self::South => write!(f, "South"),
-            Self::East  => write!(f, "East"),
-            Self::West  => write!(f, "West"),
+            Self::East => write!(f, "East"),
+            Self::West => write!(f, "West"),
         }
     }
 }
@@ -81,7 +76,7 @@ pub enum Turn {
 impl fmt::Display for Turn {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::Left  => write!(f, "L"),
+            Self::Left => write!(f, "L"),
             Self::Right => write!(f, "R"),
         }
     }

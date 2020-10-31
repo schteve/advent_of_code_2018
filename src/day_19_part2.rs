@@ -6,7 +6,7 @@
 */
 
 use regex::Regex;
-use std::ops::{ Index, IndexMut };
+use std::ops::{Index, IndexMut};
 
 const NUM_REGISTERS: usize = 6;
 
@@ -78,7 +78,7 @@ impl Instruction {
             "eqir" => 13,
             "eqri" => 14,
             "eqrr" => 15,
-            _  => return None,
+            _ => return None,
         };
 
         let input_a = split.next().unwrap().parse::<u32>();
@@ -98,16 +98,14 @@ impl Instruction {
 
         Some(Self {
             opcode,
-            input_a:  input_a.unwrap(),
-            input_b:  input_b.unwrap(),
+            input_a: input_a.unwrap(),
+            input_b: input_b.unwrap(),
             output_c: output_c.unwrap(),
         })
     }
 
     fn many_from_string(input: &str) -> Vec<Self> {
-        input.lines()
-            .filter_map(Self::from_string)
-            .collect()
+        input.lines().filter_map(Self::from_string).collect()
     }
 
     fn validate_opcode(&self) -> Result<(), Error> {
@@ -145,23 +143,23 @@ impl Instruction {
     fn dispatch(&self, input: State) -> Result<State, Error> {
         self.validate_opcode()?;
         match self.opcode {
-            0  => self.addr(input),
-            1  => self.addi(input),
-            2  => self.mulr(input),
-            3  => self.muli(input),
-            4  => self.banr(input),
-            5  => self.bani(input),
-            6  => self.borr(input),
-            7  => self.bori(input),
-            8  => self.setr(input),
-            9  => self.seti(input),
+            0 => self.addr(input),
+            1 => self.addi(input),
+            2 => self.mulr(input),
+            3 => self.muli(input),
+            4 => self.banr(input),
+            5 => self.bani(input),
+            6 => self.borr(input),
+            7 => self.bori(input),
+            8 => self.setr(input),
+            9 => self.seti(input),
             10 => self.gtir(input),
             11 => self.gtri(input),
             12 => self.gtrr(input),
             13 => self.eqir(input),
             14 => self.eqri(input),
             15 => self.eqrr(input),
-            _  => Err(Error::InvalidFunctioncode),
+            _ => Err(Error::InvalidFunctioncode),
         }
     }
 
@@ -369,7 +367,9 @@ impl ChronalComputer {
             self.state[self.ip_reg] = self.ip;
 
             // Execute the instruction
-            self.state = self.program[self.ip as usize].dispatch(self.state.clone()).unwrap();
+            self.state = self.program[self.ip as usize]
+                .dispatch(self.state.clone())
+                .unwrap();
 
             // Write the register value back to the IP (plus an increment)
             self.ip = self.state[self.ip_reg] + 1;

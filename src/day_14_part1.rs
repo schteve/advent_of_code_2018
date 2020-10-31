@@ -57,9 +57,8 @@ fn score_after_target(target: usize) -> u64 {
         elf2 = modulo(elf2 + 1 + recipes[elf2] as usize, recipes.len());
     }
 
-    let score_slice = &recipes[target .. target + 10];
-    score_slice.iter()
-        .fold(0, |acc, &s| acc * 10 + s as u64)
+    let score_slice = &recipes[target..target + 10];
+    score_slice.iter().fold(0, |acc, &s| acc * 10 + s as u64)
 }
 
 #[aoc(day14, part1)]

@@ -163,11 +163,11 @@ enum Tile {
 impl Tile {
     fn to_char(&self) -> char {
         match *self {
-            Self::Sand      => '.',
-            Self::Clay      => '#',
-            Self::Water     => '~',
+            Self::Sand => '.',
+            Self::Clay => '#',
+            Self::Water => '~',
             Self::DriedSand => '|',
-            Self::Spring    => '+',
+            Self::Spring => '+',
         }
     }
 }
@@ -187,28 +187,28 @@ impl GeologicMap {
         let re_y = Regex::new(r"y=(\d+), x=(\d+)..(\d+)").unwrap();
 
         for cap_x in re_x.captures_iter(input) {
-            let x   = cap_x[1].parse::<i32>().unwrap();
+            let x = cap_x[1].parse::<i32>().unwrap();
             let y_0 = cap_x[2].parse::<i32>().unwrap();
             let y_1 = cap_x[3].parse::<i32>().unwrap();
 
-            for y in y_0 ..= y_1 {
+            for y in y_0..=y_1 {
                 tiles.insert(Point { x, y }, Tile::Clay);
             }
         }
 
         for cap_y in re_y.captures_iter(input) {
-            let y   = cap_y[1].parse::<i32>().unwrap();
+            let y = cap_y[1].parse::<i32>().unwrap();
             let x_0 = cap_y[2].parse::<i32>().unwrap();
             let x_1 = cap_y[3].parse::<i32>().unwrap();
 
-            for x in x_0 ..= x_1 {
+            for x in x_0..=x_1 {
                 tiles.insert(Point { x, y }, Tile::Clay);
             }
         }
 
         let range = Point::get_range(tiles.keys()).unwrap(); // Must not include the spring so we do this first
 
-        let spring = Point { x: 500, y: 0};
+        let spring = Point { x: 500, y: 0 };
         tiles.insert(spring, Tile::Spring);
 
         Self {
@@ -220,9 +220,7 @@ impl GeologicMap {
     }
 
     fn fill_path(&mut self, points: &[Point], tile: Tile) {
-        let k_v_iter = points.iter()
-            .cloned()
-            .map(|point| (point, tile));
+        let k_v_iter = points.iter().cloned().map(|point| (point, tile));
         self.tiles.extend(k_v_iter);
     }
 
@@ -337,7 +335,8 @@ impl GeologicMap {
     }
 
     fn count_water_tiles(&self) -> u32 {
-        self.tiles.values()
+        self.tiles
+            .values()
             .filter(|&tile| tile == &Tile::Water)
             .count() as u32
     }
@@ -346,9 +345,9 @@ impl GeologicMap {
 impl fmt::Display for GeologicMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (x_range, y_range) = Point::get_range(self.tiles.keys()).unwrap(); // Don't use self range because it won't include any water that flowed out of bounds left or right
-        for y in y_range.0 ..= y_range.1 {
+        for y in y_range.0..=y_range.1 {
             //write!(f, "{:4} ", y)?;
-            for x in x_range.0 ..= x_range.1 {
+            for x in x_range.0..=x_range.1 {
                 if let Some(tile) = self.tiles.get(&Point { x, y }) {
                     write!(f, "{}", tile.to_char())?;
                 } else {
@@ -371,7 +370,6 @@ pub fn solve(input: &str) -> u32 {
     assert_eq!(water_tiles, 28872);
     water_tiles
 }
-
 
 #[cfg(test)]
 mod test {

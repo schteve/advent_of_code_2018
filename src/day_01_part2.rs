@@ -41,9 +41,10 @@ fn find_first_repeat(frequencies: &[i32]) -> i32 {
 
 #[aoc(day1, part2)]
 pub fn solve(input: &str) -> i32 {
-    let frequencies: Vec<i32> = input.lines()
-                                    .map(|line| line.trim().parse::<i32>().unwrap())
-                                    .collect();
+    let frequencies: Vec<i32> = input
+        .lines()
+        .map(|line| line.trim().parse::<i32>().unwrap())
+        .collect();
 
     let result = find_first_repeat(&frequencies);
     println!("First repeat frequency: {}", result);

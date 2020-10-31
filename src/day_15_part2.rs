@@ -100,16 +100,16 @@ impl Tile {
             '#' => Self::Wall,
             'G' => Self::Goblin(200),
             'E' => Self::Elf(200),
-            _  => panic!("Unknown tile: {}", c),
+            _ => panic!("Unknown tile: {}", c),
         }
     }
 
     fn to_char(&self) -> char {
         match *self {
-            Self::Empty     => '.',
-            Self::Wall      => '#',
+            Self::Empty => '.',
+            Self::Wall => '#',
             Self::Goblin(_) => 'G',
-            Self::Elf(_)    => 'E',
+            Self::Elf(_) => 'E',
         }
     }
 }
@@ -118,10 +118,10 @@ impl fmt::Display for Tile {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_char())?;
         match self {
-            Self::Empty     => (),
-            Self::Wall      => (),
+            Self::Empty => (),
+            Self::Wall => (),
             Self::Goblin(x) => write!(f, "({})", x)?,
-            Self::Elf(x)    => write!(f, "({})", x)?,
+            Self::Elf(x) => write!(f, "({})", x)?,
         };
         Ok(())
     }
@@ -164,10 +164,15 @@ impl BattleMap {
     fn get_range(&self) -> ((i32, i32), (i32, i32)) {
         let mut tiles_iter = self.tiles.iter();
         if let Some((point, _tile)) = tiles_iter.next() {
-            tiles_iter.fold(((point.x, point.x), (point.y, point.y)),
-                |(acc_x, acc_y), (p, _)|
-                    ((acc_x.0.min(p.x), acc_x.1.max(p.x)),
-                     (acc_y.0.min(p.y), acc_y.1.max(p.y))))
+            tiles_iter.fold(
+                ((point.x, point.x), (point.y, point.y)),
+                |(acc_x, acc_y), (p, _)| {
+                    (
+                        (acc_x.0.min(p.x), acc_x.1.max(p.x)),
+                        (acc_y.0.min(p.y), acc_y.1.max(p.y)),
+                    )
+                },
+            )
         } else {
             ((0, 0), (0, 0))
         }
@@ -176,9 +181,9 @@ impl BattleMap {
     fn to_string(&self, with_details: bool) -> String {
         let mut output = String::new();
         let range = self.get_range();
-        for y in (range.1).0 ..= (range.1).1 {
+        for y in (range.1).0..=(range.1).1 {
             let mut unit_strings = Vec::new();
-            for x in (range.0).0 ..= (range.0).1 {
+            for x in (range.0).0..=(range.0).1 {
                 if let Some(tile) = self.tiles.get(&Point { x, y }) {
                     write!(output, "{}", tile.to_char()).unwrap();
                     if with_details == true {
@@ -201,7 +206,9 @@ impl BattleMap {
 
     // Returns in reading order
     fn identify_units(&self) -> Vec<Point> {
-        let mut units: Vec<Point> = self.tiles.iter()
+        let mut units: Vec<Point> = self
+            .tiles
+            .iter()
             .filter(|&(_point, tile)| matches!(tile, Tile::Goblin(_) | Tile::Elf(_)))
             .map(|(&point, &_tile)| point)
             .collect();
@@ -210,11 +217,13 @@ impl BattleMap {
     }
 
     fn identify_enemies(&self, am_goblin: bool) -> Vec<Point> {
-        let units: Vec<Point> = self.tiles.iter()
+        let units: Vec<Point> = self
+            .tiles
+            .iter()
             .filter(|&(_point, tile)| match tile {
                 Tile::Goblin(_) => am_goblin == false,
-                Tile::Elf(_)    => am_goblin == true,
-                _ => false
+                Tile::Elf(_) => am_goblin == true,
+                _ => false,
             })
             .map(|(&point, &_tile)| point)
             .collect();
@@ -222,17 +231,19 @@ impl BattleMap {
     }
 
     fn identify_adjacent_empty(&self, unit: &Point) -> Vec<Point> {
-        unit.orthogonals().into_iter()
+        unit.orthogonals()
+            .into_iter()
             .filter(|&p| self.tiles.get(&p) == Some(&Tile::Empty))
             .collect()
     }
 
     fn identify_adjacent_enemies(&self, unit: &Point, am_goblin: bool) -> Vec<Point> {
-        unit.orthogonals().into_iter()
+        unit.orthogonals()
+            .into_iter()
             .filter(|&point| match self.tiles.get(&point) {
                 Some(Tile::Goblin(_)) => am_goblin == false,
-                Some(Tile::Elf(_))    => am_goblin == true,
-                _ => false
+                Some(Tile::Elf(_)) => am_goblin == true,
+                _ => false,
             })
             .collect()
     }
@@ -272,7 +283,9 @@ impl BattleMap {
                     }
                     visited.insert(frontier_point);
 
-                    let next: Vec<Point> = self.identify_adjacent_empty(&frontier_point).into_iter()
+                    let next: Vec<Point> = self
+                        .identify_adjacent_empty(&frontier_point)
+                        .into_iter()
                         .filter(|point| visited.get(&point) == None)
                         .collect();
                     for &n in &next {
@@ -299,9 +312,12 @@ impl BattleMap {
         }
 
         // Convert from BTreeSet to Vec, removing all but the shortest paths
-        let paths_vec: Vec<Path> = Vec::from_iter(paths.iter()
-                                                    .filter(|path| path.length == shortest_path.unwrap())
-                                                    .cloned());
+        let paths_vec: Vec<Path> = Vec::from_iter(
+            paths
+                .iter()
+                .filter(|path| path.length == shortest_path.unwrap())
+                .cloned(),
+        );
         paths_vec
     }
 
@@ -313,7 +329,7 @@ impl BattleMap {
             // Is this unit a goblin or an elf?
             let am_goblin = match self.tiles.get(&unit_location) {
                 Some(Tile::Goblin(_)) => true,
-                Some(Tile::Elf(_))    => false,
+                Some(Tile::Elf(_)) => false,
                 _ => continue, // Unit was killed in an earlier iteration
             };
 
@@ -326,7 +342,8 @@ impl BattleMap {
                     // No more enemies, end immediately
                     return false;
                 }
-                let mut adjacents: Vec<Point> = enemies.into_iter()
+                let mut adjacents: Vec<Point> = enemies
+                    .into_iter()
                     .flat_map(|enemy| self.identify_adjacent_empty(&enemy))
                     .collect();
                 adjacents.sort_by(Point::cmp_y_x);
@@ -346,14 +363,14 @@ impl BattleMap {
 
                 // Keep only paths to the first target in reading order
                 let target = paths[0].last;
-                let paths_to_target: Vec<Path> = paths.into_iter()
+                let paths_to_target: Vec<Path> = paths
+                    .into_iter()
                     .filter(|path| path.last == target)
                     .collect();
 
                 // Take the first step in reading order
-                let mut steps: Vec<Point> = paths_to_target.into_iter()
-                    .map(|path| path.first)
-                    .collect();
+                let mut steps: Vec<Point> =
+                    paths_to_target.into_iter().map(|path| path.first).collect();
                 steps.sort_by(Point::cmp_y_x);
                 unit_location = steps[0];
 
@@ -364,21 +381,24 @@ impl BattleMap {
             }
 
             // Check again if there are adjacent enemies (we may have moved). Attack if possible.
-            let enemies_can_attack: Vec<Point> = self.identify_adjacent_enemies(&unit_location, am_goblin);
+            let enemies_can_attack: Vec<Point> =
+                self.identify_adjacent_enemies(&unit_location, am_goblin);
             if enemies_can_attack.is_empty() == false {
                 // Find enemies with lowest HP
-                let least_hp = enemies_can_attack.iter()
+                let least_hp = enemies_can_attack
+                    .iter()
                     .map(|&enemy| match self.tiles.get(&enemy) {
                         Some(&Tile::Goblin(x)) => x,
-                        Some(&Tile::Elf(x))    => x,
+                        Some(&Tile::Elf(x)) => x,
                         _ => panic!("Unexpected tile"),
                     })
                     .min()
                     .unwrap();
-                let mut enemies_least_hp: Vec<Point> = enemies_can_attack.into_iter()
+                let mut enemies_least_hp: Vec<Point> = enemies_can_attack
+                    .into_iter()
                     .filter(|&enemy| match self.tiles.get(&enemy) {
                         Some(&Tile::Goblin(x)) => x == least_hp,
-                        Some(&Tile::Elf(x))    => x == least_hp,
+                        Some(&Tile::Elf(x)) => x == least_hp,
                         _ => panic!("Unexpected tile"),
                     })
                     .collect();
@@ -394,14 +414,14 @@ impl BattleMap {
                             } else {
                                 Tile::Goblin(x - self.elf_atk)
                             }
-                        },
+                        }
                         Some(&Tile::Elf(x)) => {
                             if x <= self.goblin_atk {
                                 Tile::Empty // Dead elf
                             } else {
                                 Tile::Elf(x - self.goblin_atk)
                             }
-                        },
+                        }
                         _ => panic!("Unexpected tile"),
                     };
                     self.tiles.insert(enemy, enemy_adjusted);
@@ -413,19 +433,23 @@ impl BattleMap {
     }
 
     fn count_goblins(&self) -> u32 {
-        self.tiles.iter()
+        self.tiles
+            .iter()
             .filter(|&(_point, tile)| matches!(tile, Tile::Goblin(_)))
             .count() as u32
     }
 
     fn count_elves(&self) -> u32 {
-        self.tiles.iter()
+        self.tiles
+            .iter()
             .filter(|&(_point, tile)| matches!(tile, Tile::Elf(_)))
             .count() as u32
     }
 
     fn calculate_score(&self, rounds: u32) -> u32 {
-        let total_hit_points: u32 = self.tiles.iter()
+        let total_hit_points: u32 = self
+            .tiles
+            .iter()
             .map(|(_point, tile)| match tile {
                 &Tile::Goblin(x) | &Tile::Elf(x) => x,
                 _ => 0,
@@ -503,7 +527,7 @@ mod test {
         let mut battle_map = BattleMap::from_string(input);
 
         let results = vec![
-"
+            "
 #########
 #.G...G.#
 #...G...#
@@ -513,7 +537,7 @@ mod test {
 #G..G..G#
 #.......#
 #########",
-"
+            "
 #########
 #..G.G..#
 #...G...#
@@ -523,7 +547,7 @@ mod test {
 #.......#
 #.......#
 #########",
-"
+            "
 #########
 #.......#
 #..GGG..#
@@ -532,7 +556,8 @@ mod test {
 #......G#
 #.......#
 #.......#
-#########"];
+#########",
+        ];
         for (i, result) in results.iter().enumerate() {
             println!("Round: {}", i);
             battle_map.tick();
@@ -554,78 +579,106 @@ mod test {
         let mut battle_map = BattleMap::from_string(input);
 
         let results: Vec<(usize, &str)> = vec![
-(1, "
+            (
+                1,
+                "
 #######
 #..G..#   G(200)
 #...EG#   E(197), G(197)
 #.#G#G#   G(200), G(197)
 #...#E#   E(197)
 #.....#
-#######"),
-(2, "
+#######",
+            ),
+            (
+                2,
+                "
 #######
 #...G.#   G(200)
 #..GEG#   G(200), E(188), G(194)
 #.#.#G#   G(194)
 #...#E#   E(194)
 #.....#
-#######"),
-(23, "
+#######",
+            ),
+            (
+                23,
+                "
 #######
 #...G.#   G(200)
 #..G.G#   G(200), G(131)
 #.#.#G#   G(131)
 #...#E#   E(131)
 #.....#
-#######"),
-(24, "
+#######",
+            ),
+            (
+                24,
+                "
 #######
 #..G..#   G(200)
 #...G.#   G(131)
 #.#G#G#   G(200), G(128)
 #...#E#   E(128)
 #.....#
-#######"),
-(25, "
+#######",
+            ),
+            (
+                25,
+                "
 #######
 #.G...#   G(200)
 #..G..#   G(131)
 #.#.#G#   G(125)
 #..G#E#   G(200), E(125)
 #.....#
-#######"),
-(26, "
+#######",
+            ),
+            (
+                26,
+                "
 #######
 #G....#   G(200)
 #.G...#   G(131)
 #.#.#G#   G(122)
 #...#E#   E(122)
 #..G..#   G(200)
-#######"),
-(27, "
+#######",
+            ),
+            (
+                27,
+                "
 #######
 #G....#   G(200)
 #.G...#   G(131)
 #.#.#G#   G(119)
 #...#E#   E(119)
 #...G.#   G(200)
-#######"),
-(28, "
+#######",
+            ),
+            (
+                28,
+                "
 #######
 #G....#   G(200)
 #.G...#   G(131)
 #.#.#G#   G(116)
 #...#E#   E(113)
 #....G#   G(200)
-#######"),
-(47, "
+#######",
+            ),
+            (
+                47,
+                "
 #######
 #G....#   G(200)
 #.G...#   G(131)
 #.#.#G#   G(59)
 #...#.#
 #....G#   G(200)
-#######")];
+#######",
+            ),
+        ];
         let mut counter = 0;
         for &(round, result) in results.iter() {
             while counter < round {
@@ -642,82 +695,103 @@ mod test {
     #[test]
     fn test_battle() {
         let inputs_results_scores: Vec<(&str, &str, u32)> = vec![
-            ("
+            (
+                "
 #######
 #.G...#
 #...EG#
 #.#.#G#
 #..G#E#
 #.....#
-#######","
+#######",
+                "
 #######
 #G....#   G(200)
 #.G...#   G(131)
 #.#.#G#   G(59)
 #...#.#
 #....G#   G(200)
-#######", 27730),
-            ("
+#######",
+                27730,
+            ),
+            (
+                "
 #######
 #G..#E#
 #E#E.E#
 #G.##.#
 #...#E#
 #...E.#
-#######", "
+#######",
+                "
 #######
 #...#E#   E(200)
 #E#...#   E(197)
 #.E##.#   E(185)
 #E..#E#   E(200), E(200)
 #.....#
-#######", 36334),
-            ("
+#######",
+                36334,
+            ),
+            (
+                "
 #######
 #E..EG#
 #.#G.E#
 #E.##E#
 #G..#.#
 #..E#.#
-#######", "
+#######",
+                "
 #######
 #.E.E.#   E(164), E(197)
 #.#E..#   E(200)
 #E.##.#   E(98)
 #.E.#.#   E(200)
 #...#.#
-#######", 39514),
-            ("
+#######",
+                39514,
+            ),
+            (
+                "
 #######
 #E.G#.#
 #.#G..#
 #G.#.G#
 #G..#.#
 #...E.#
-#######", "
+#######",
+                "
 #######
 #G.G#.#   G(200), G(98)
 #.#G..#   G(200)
 #..#..#
 #...#G#   G(95)
 #...G.#   G(200)
-#######", 27755),
-            ("
+#######",
+                27755,
+            ),
+            (
+                "
 #######
 #.E...#
 #.#..G#
 #.###.#
 #E#G#G#
 #...#G#
-#######", "
+#######",
+                "
 #######
 #.....#
 #.#G..#   G(200)
 #.###.#
 #.#.#.#
 #G.G#G#   G(98), G(38), G(200)
-#######", 28944),
-            ("
+#######",
+                28944,
+            ),
+            (
+                "
 #########
 #G......#
 #.E.#...#
@@ -726,7 +800,8 @@ mod test {
 #...#...#
 #.G...G.#
 #.....G.#
-#########", "
+#########",
+                "
 #########
 #.G.....#   G(137)
 #G.G#...#   G(200), G(200)
@@ -735,7 +810,10 @@ mod test {
 #.G.#...#   G(200)
 #.......#
 #.......#
-#########", 18740)];
+#########",
+                18740,
+            ),
+        ];
 
         for (input, result, score) in inputs_results_scores {
             let mut battle_map = BattleMap::from_string(input);
@@ -748,67 +826,88 @@ mod test {
     #[test]
     fn test_power_up_elves() {
         let inputs_results_scores_power: Vec<(&str, &str, u32, u32)> = vec![
-            ("
+            (
+                "
 #######
 #.G...#
 #...EG#
 #.#.#G#
 #..G#E#
 #.....#
-#######","
+#######",
+                "
 #######
 #..E..#   E(158)
 #...E.#   E(14)
 #.#.#.#
 #...#.#
 #.....#
-#######", 4988, 15),
-            ("
+#######",
+                4988,
+                15,
+            ),
+            (
+                "
 #######
 #E..EG#
 #.#G.E#
 #E.##E#
 #G..#.#
 #..E#.#
-#######", "
+#######",
+                "
 #######
 #.E.E.#   E(200), E(23)
 #.#E..#   E(200)
 #E.##E#   E(125), E(200)
 #.E.#.#   E(200)
 #...#.#
-#######", 31284, 4),
-            ("
+#######",
+                31284,
+                4,
+            ),
+            (
+                "
 #######
 #E.G#.#
 #.#G..#
 #G.#.G#
 #G..#.#
 #...E.#
-#######", "
+#######",
+                "
 #######
 #.E.#.#   E(8)
 #.#E..#   E(86)
 #..#..#
 #...#.#
 #.....#
-#######", 3478, 15),
-            ("
+#######",
+                3478,
+                15,
+            ),
+            (
+                "
 #######
 #.E...#
 #.#..G#
 #.###.#
 #E#G#G#
 #...#G#
-#######", "
+#######",
+                "
 #######
 #...E.#   E(14)
 #.#..E#   E(152)
 #.###.#
 #.#.#.#
 #...#.#
-#######", 6474, 12),
-            ("
+#######",
+                6474,
+                12,
+            ),
+            (
+                "
 #########
 #G......#
 #.E.#...#
@@ -817,7 +916,8 @@ mod test {
 #...#...#
 #.G...G.#
 #.....G.#
-#########", "
+#########",
+                "
 #########
 #.......#
 #.E.#...#   E(38)
@@ -826,7 +926,11 @@ mod test {
 #...#...#
 #.......#
 #.......#
-#########", 1140, 34)];
+#########",
+                1140,
+                34,
+            ),
+        ];
 
         for (input, result, score, power) in inputs_results_scores_power {
             let mut battle_map = BattleMap::from_string(input);

@@ -49,25 +49,25 @@
     What is the size of the largest area that isn't infinite?
 */
 
-use regex::Regex;
 use super::common::Point;
+use regex::Regex;
 use std::collections::HashMap;
 
 struct LandingZone {
     coordinates: Vec<Point>,
-    area: HashMap<Point, u32>
+    area: HashMap<Point, u32>,
 }
 
 impl LandingZone {
     fn from_string(input: &str) -> Self {
         let re = Regex::new(r"(\d+), (\d+)").unwrap();
-        let coordinates: Vec<Point> = re.captures_iter(input)
-                                        .map(|cap|
-                                            Point {
-                                                x: cap[1].parse::<i32>().unwrap(),
-                                                y: cap[2].parse::<i32>().unwrap(),
-                                            })
-                                        .collect();
+        let coordinates: Vec<Point> = re
+            .captures_iter(input)
+            .map(|cap| Point {
+                x: cap[1].parse::<i32>().unwrap(),
+                y: cap[2].parse::<i32>().unwrap(),
+            })
+            .collect();
         Self {
             coordinates,
             area: HashMap::new(),
@@ -75,9 +75,10 @@ impl LandingZone {
     }
 
     fn total_distance(&self, point: Point) -> u32 {
-        self.coordinates.iter()
-                        .map(|&coord| Point::manhattan(point, coord))
-                        .sum()
+        self.coordinates
+            .iter()
+            .map(|&coord| Point::manhattan(point, coord))
+            .sum()
     }
 
     fn get_range(&self) -> ((i32, i32), (i32, i32)) {
@@ -103,8 +104,8 @@ impl LandingZone {
 
     fn scan(&mut self) {
         let (x_range, y_range) = self.get_range();
-        for y in y_range.0 ..= y_range.1 {
-            for x in x_range.0 ..= x_range.1 {
+        for y in y_range.0..=y_range.1 {
+            for x in x_range.0..=x_range.1 {
                 let p = Point { x, y };
                 let total_distance = self.total_distance(p);
                 self.area.insert(p, total_distance);
@@ -113,9 +114,7 @@ impl LandingZone {
     }
 
     fn count_points_under_size(&self, size: u32) -> usize {
-        self.area.values()
-                .filter(|&&dist| dist < size)
-                .count()
+        self.area.values().filter(|&&dist| dist < size).count()
     }
 }
 

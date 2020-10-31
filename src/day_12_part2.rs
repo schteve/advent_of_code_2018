@@ -23,14 +23,9 @@ impl Pots {
     }
 
     fn from_string(input: &str) -> Self {
-        let pots: Vec<bool> = input.chars()
-            .map(|c| c == '#')
-            .collect();
+        let pots: Vec<bool> = input.chars().map(|c| c == '#').collect();
 
-            Self {
-                pots,
-                first_pot: 0,
-            }
+        Self { pots, first_pot: 0 }
     }
 
     fn trim(&self) -> (&[bool], usize) {
@@ -57,9 +52,16 @@ impl Pots {
     }
 
     fn sum(&self) -> i64 {
-        self.pots.iter()
+        self.pots
+            .iter()
             .enumerate()
-            .map(|(i, &pot)| if pot == true { self.first_pot + i as i64 } else { 0 })
+            .map(|(i, &pot)| {
+                if pot == true {
+                    self.first_pot + i as i64
+                } else {
+                    0
+                }
+            })
             .sum()
     }
 }
@@ -76,7 +78,7 @@ impl fmt::Display for Pots {
 
 struct Tunnel {
     pots: Pots,
-    rules: Vec<bool>
+    rules: Vec<bool>,
 }
 
 impl Tunnel {
@@ -85,13 +87,12 @@ impl Tunnel {
         let caps = re.captures(input).unwrap();
 
         let re = Regex::new(r"([#\.]+) => ([#\.])").unwrap();
-        let rules_list: Vec<i32> = re.captures_iter(input)
+        let rules_list: Vec<i32> = re
+            .captures_iter(input)
             .filter(|cap| &cap[2] == "#")
             .map(|cap| Tunnel::rule_id_from_string(&cap[1]))
             .collect();
-        let rules: Vec<bool> = (0..32)
-            .map(|i| rules_list.contains(&i))
-            .collect();
+        let rules: Vec<bool> = (0..32).map(|i| rules_list.contains(&i)).collect();
 
         Self {
             pots: Pots::from_string(&caps[1]),
@@ -129,7 +130,8 @@ impl Tunnel {
             let (pots, slice_offset) = current.trim();
             for &pot in pots.iter().chain(std::iter::repeat(&false).take(4)) {
                 rule_id = (rule_id << 1) & 0x1F; // Keep only 5 bits
-                if pot == true { // The new pot is the rightmost (2 from the center)
+                if pot == true {
+                    // The new pot is the rightmost (2 from the center)
                     rule_id |= 1;
                 }
                 next.pots.push(self.rules[rule_id]);

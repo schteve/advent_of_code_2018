@@ -5,15 +5,15 @@
     What would the new winning Elf's score be if the number of the last marble were 100 times larger?
 */
 
-use regex::Regex;
 use super::common::LinkedListCirc;
+use regex::Regex;
 
 struct Game {
     max_player: u32,
     max_marble: u32,
     state: LinkedListCirc,
     current_player: u32,
-    player_score: Vec<u32>
+    player_score: Vec<u32>,
 }
 
 impl Game {
@@ -46,7 +46,8 @@ impl Game {
 
     fn play(&mut self) -> u32 {
         // Assumes player scores are initialized to 0
-        for marble_number in 1..=self.max_marble { // Marble 0 is placed at initialization
+        for marble_number in 1..=self.max_marble {
+            // Marble 0 is placed at initialization
             if marble_number % 23 == 0 {
                 // Don't place this marble, remove the one 7 to the left, and add both to the current player's score.
                 let removed = self.state.remove(-7);
@@ -71,7 +72,7 @@ pub fn solve(input: &str) -> u32 {
     let mut game = Game::from_string(input);
     game.max_marble *= 100;
     let high_score = game.play();
-    println!("High score: {}" , high_score);
+    println!("High score: {}", high_score);
     assert_eq!(high_score, 3009951158);
     high_score
 }
@@ -110,7 +111,13 @@ mod test {
         let mut game = Game::from_string(input);
         let high_score = game.play();
         assert_eq!(high_score, 32);
-        assert_eq!(game.state.to_vec(), vec![0, 16, 8, 17, 4, 18, 19, 2, 24, 20, 25, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15]);
+        assert_eq!(
+            game.state.to_vec(),
+            vec![
+                0, 16, 8, 17, 4, 18, 19, 2, 24, 20, 25, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7,
+                15
+            ]
+        );
 
         let input = "10 players; last marble is worth 1618 points";
         let mut game = Game::from_string(input);

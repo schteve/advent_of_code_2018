@@ -177,7 +177,7 @@ impl Tile {
     fn to_char(&self) -> char {
         match *self {
             Self::OpenGround => '.',
-            Self::Trees      => '|',
+            Self::Trees => '|',
             Self::Lumberyard => '#',
         }
     }
@@ -213,30 +213,32 @@ impl Construction {
 
     fn determine_next_tile(&self, point: &Point) -> Option<Tile> {
         let adjacents = point.adjacents();
-        let trees_count = adjacents.iter()
-                    .map(|adj| self.tiles.get(adj))
-                    .filter(|&t| t == Some(&Tile::Trees))
-                    .count();
-        let lumberyard_count = adjacents.iter()
-                    .map(|adj| self.tiles.get(adj))
-                    .filter(|&t| t == Some(&Tile::Lumberyard))
-                    .count();
+        let trees_count = adjacents
+            .iter()
+            .map(|adj| self.tiles.get(adj))
+            .filter(|&t| t == Some(&Tile::Trees))
+            .count();
+        let lumberyard_count = adjacents
+            .iter()
+            .map(|adj| self.tiles.get(adj))
+            .filter(|&t| t == Some(&Tile::Lumberyard))
+            .count();
         match self.tiles.get(&point) {
             Some(Tile::OpenGround) => {
                 if trees_count >= 3 {
                     return Some(Tile::Trees);
                 }
-            },
+            }
             Some(Tile::Trees) => {
                 if lumberyard_count >= 3 {
                     return Some(Tile::Lumberyard);
                 }
-            },
+            }
             Some(Tile::Lumberyard) => {
                 if lumberyard_count == 0 || trees_count == 0 {
                     return Some(Tile::OpenGround);
                 }
-            },
+            }
             None => panic!("Unexpected empty tile at {}", point),
         }
 
@@ -257,10 +259,14 @@ impl Construction {
     }
 
     fn resource_value(&self) -> u32 {
-        let trees_count = self.tiles.values()
+        let trees_count = self
+            .tiles
+            .values()
             .filter(|&tile| tile == &Tile::Trees)
             .count() as u32;
-        let lumberyard_count = self.tiles.values()
+        let lumberyard_count = self
+            .tiles
+            .values()
             .filter(|&tile| tile == &Tile::Lumberyard)
             .count() as u32;
         trees_count * lumberyard_count
@@ -270,8 +276,8 @@ impl Construction {
 impl fmt::Display for Construction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let range = Point::get_range(self.tiles.keys()).unwrap();
-        for y in (range.1).0 ..= (range.1).1 {
-            for x in (range.0).0 ..= (range.0).1 {
+        for y in (range.1).0..=(range.1).1 {
+            for x in (range.0).0..=(range.0).1 {
                 if let Some(tile) = self.tiles.get(&Point { x, y }) {
                     write!(f, "{}", tile.to_char())?;
                 } else {

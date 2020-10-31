@@ -26,8 +26,9 @@
 use std::fmt;
 
 fn check_destroy(a: char, b: char) -> bool {
-    if (a == b.to_ascii_lowercase() && a.to_ascii_uppercase() == b) ||
-       (a == b.to_ascii_uppercase() && a.to_ascii_lowercase() == b) {
+    if (a == b.to_ascii_lowercase() && a.to_ascii_uppercase() == b)
+        || (a == b.to_ascii_uppercase() && a.to_ascii_lowercase() == b)
+    {
         true
     } else {
         false
@@ -76,10 +77,10 @@ impl Polymer {
 
         let mut i = 0;
         self.units.retain(|_| {
-                let tmp = i;
-                i += 1;
-                keep[tmp]
-            });
+            let tmp = i;
+            i += 1;
+            keep[tmp]
+        });
     }
 
     fn react_all(&mut self) {

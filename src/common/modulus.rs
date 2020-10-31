@@ -1,7 +1,7 @@
-
 use num::Integer;
 
-pub fn modulo<T>(n: T, modulus: T) -> T where
+pub fn modulo<T>(n: T, modulus: T) -> T
+where
     T: Copy + Integer + std::ops::AddAssign + std::ops::SubAssign,
 {
     assert!(modulus > T::zero());

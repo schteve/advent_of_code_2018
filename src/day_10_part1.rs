@@ -141,9 +141,9 @@
     What message will eventually appear in the sky?
 */
 
+use super::common::Point;
 use regex::Regex;
 use std::fmt;
-use super::common::Point;
 
 struct StarMap {
     stars: Vec<Point>,
@@ -155,7 +155,8 @@ impl StarMap {
         let mut stars: Vec<Point> = Vec::new();
         let mut velocity: Vec<Point> = Vec::new();
 
-        let re = Regex::new(r"position=<\s*(-?\d+),\s+(-?\d+)> velocity=<\s*(-?\d+),\s+(-?\d+)>").unwrap();
+        let re = Regex::new(r"position=<\s*(-?\d+),\s+(-?\d+)> velocity=<\s*(-?\d+),\s+(-?\d+)>")
+            .unwrap();
         for cap in re.captures_iter(input) {
             let p = Point {
                 x: cap[1].parse::<i32>().unwrap(),
@@ -170,10 +171,7 @@ impl StarMap {
             velocity.push(p);
         }
 
-        Self {
-            stars,
-            velocity,
-        }
+        Self { stars, velocity }
     }
 
     fn get_range(&self) -> ((i32, i32), (i32, i32)) {
@@ -241,8 +239,8 @@ impl fmt::Display for StarMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f)?;
         let (x_range, y_range) = self.get_range();
-        for y in y_range.0 ..= y_range.1 {
-            for x in x_range.0 ..= x_range.1 {
+        for y in y_range.0..=y_range.1 {
+            for x in x_range.0..=x_range.1 {
                 let p = Point { x, y };
                 if self.stars.contains(&p) == true {
                     write!(f, "#")?;
@@ -261,7 +259,9 @@ pub fn solve(input: &str) -> String {
     let mut star_map = StarMap::from_string(input);
     star_map.step_until_minimum_range();
     let message = star_map.to_string();
-    assert_eq!(message.trim(), "
+    assert_eq!(
+        message.trim(),
+        "
 #....#..#.......######....##....#....#..#####....####...######
 #....#..#............#...#..#...#...#...#....#..#....#.......#
 .#..#...#............#..#....#..#..#....#....#..#............#
@@ -271,7 +271,9 @@ pub fn solve(input: &str) -> String {
 .#..#...#........#......#....#..#.#.....#....#..#....#...#....
 .#..#...#.......#.......#....#..#..#....#....#..#....#..#.....
 #....#..#.......#.......#....#..#...#...#....#..#...##..#.....
-#....#..######..######..#....#..#....#..#####....###.#..######".trim());
+#....#..######..######..#....#..#....#..#####....###.#..######"
+            .trim()
+    );
     message
 }
 
@@ -316,7 +318,9 @@ position=<-3,  6> velocity=< 2, -1>";
         let mut star_map = StarMap::from_string(input);
 
         let message = star_map.to_string();
-        assert_eq!(message.trim(), "
+        assert_eq!(
+            message.trim(),
+            "
 ........#.............
 ................#.....
 .........#.#..#.......
@@ -332,11 +336,15 @@ position=<-3,  6> velocity=< 2, -1>";
 .......#..............
 ...........#..#.......
 #...........#.........
-...#.......#..........".trim());
+...#.......#.........."
+                .trim()
+        );
 
         star_map.step(1);
         let message = star_map.to_string();
-        assert_eq!(message.trim(), "
+        assert_eq!(
+            message.trim(),
+            "
 ........#....#....
 ......#.....#.....
 #.........#......#
@@ -348,11 +356,15 @@ position=<-3,  6> velocity=< 2, -1>";
 ......#.#.........
 ......#...#.....#.
 #...........#.....
-..#.....#.#.......".trim());
+..#.....#.#......."
+                .trim()
+        );
 
         star_map.step(1);
         let message = star_map.to_string();
-        assert_eq!(message.trim(), "
+        assert_eq!(
+            message.trim(),
+            "
 ..........#...
 #..#...####..#
 ..............
@@ -362,11 +374,15 @@ position=<-3,  6> velocity=< 2, -1>";
 ...#..#..#.#..
 #....#.#......
 .#...#...##.#.
-....#.........".trim());
+....#........."
+                .trim()
+        );
 
         star_map.step(1);
         let message = star_map.to_string();
-        assert_eq!(message.trim(), "
+        assert_eq!(
+            message.trim(),
+            "
 #...#..###
 #...#...#.
 #...#...#.
@@ -374,11 +390,15 @@ position=<-3,  6> velocity=< 2, -1>";
 #...#...#.
 #...#...#.
 #...#...#.
-#...#..###".trim());
+#...#..###"
+                .trim()
+        );
 
         star_map.step(1);
         let message = star_map.to_string();
-        assert_eq!(message.trim(), "
+        assert_eq!(
+            message.trim(),
+            "
 ........#....
 ....##...#.#.
 ..#.....#..#.
@@ -389,7 +409,9 @@ position=<-3,  6> velocity=< 2, -1>";
 #......#...#.
 .#.....##....
 ...........#.
-...........#.".trim());
+...........#."
+                .trim()
+        );
     }
 
     #[test]
@@ -429,7 +451,9 @@ position=<-3,  6> velocity=< 2, -1>";
         let mut star_map = StarMap::from_string(input);
         star_map.step_until_minimum_range();
         let message = star_map.to_string();
-        assert_eq!(message.trim(), "
+        assert_eq!(
+            message.trim(),
+            "
 #...#..###
 #...#...#.
 #...#...#.
@@ -437,6 +461,8 @@ position=<-3,  6> velocity=< 2, -1>";
 #...#...#.
 #...#...#.
 #...#...#.
-#...#..###".trim());
+#...#..###"
+                .trim()
+        );
     }
 }

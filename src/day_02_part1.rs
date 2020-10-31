@@ -39,7 +39,8 @@ fn count_duplicates(box_id: &str) -> (bool, bool) {
 }
 
 fn get_all_duplicates(box_ids: &[&str]) -> Vec<(bool, bool)> {
-    box_ids.iter()
+    box_ids
+        .iter()
         .map(|box_id| count_duplicates(box_id))
         .collect()
 }
@@ -53,9 +54,7 @@ fn checksum(duplicates: &[(bool, bool)]) -> u32 {
 
 #[aoc(day2, part1)]
 pub fn solve(input: &str) -> u32 {
-    let box_ids: Vec<&str> = input.lines()
-                                .map(|line| line.trim())
-                                .collect();
+    let box_ids: Vec<&str> = input.lines().map(|line| line.trim()).collect();
     let duplicates = get_all_duplicates(&box_ids);
     let chk = checksum(&duplicates);
     println!("Checksum: {}", chk);
@@ -93,13 +92,9 @@ mod test {
 
     #[test]
     fn test_checksum() {
-        let box_ids = vec!["abcdef",
-                           "bababc",
-                           "abbcde",
-                           "abcccd",
-                           "aabcdd",
-                           "abcdee",
-                           "ababab"];
+        let box_ids = vec![
+            "abcdef", "bababc", "abbcde", "abcccd", "aabcdd", "abcdee", "ababab",
+        ];
         let duplicates = get_all_duplicates(&box_ids);
         let chk = checksum(&duplicates);
         assert_eq!(chk, 12);

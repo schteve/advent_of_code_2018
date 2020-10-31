@@ -16,7 +16,8 @@ fn recipes_before_target(target: &str) -> usize {
     let mut elf1: usize = 0;
     let mut elf2: usize = 1;
 
-    let target_vec: Vec<u8> = target.chars()
+    let target_vec: Vec<u8> = target
+        .chars()
         .map(|c| c.to_digit(10).expect("Non-digit character") as u8)
         .collect();
     let mut target_idx = 0;

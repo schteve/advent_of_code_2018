@@ -17,7 +17,11 @@
 */
 
 fn calculate_difference(id1: &str, id2: &str) -> u32 {
-    let count_same = id1.chars().zip(id2.chars()).filter(|(c1, c2)| c1 == c2).count();
+    let count_same = id1
+        .chars()
+        .zip(id2.chars())
+        .filter(|(c1, c2)| c1 == c2)
+        .count();
     (id1.len() - count_same) as u32
 }
 
@@ -34,7 +38,8 @@ fn find_correct_boxes(box_ids: &[&str]) -> (usize, usize) {
 }
 
 fn common_letters(id1: &str, id2: &str) -> String {
-    id1.chars().zip(id2.chars())
+    id1.chars()
+        .zip(id2.chars())
         .filter(|(c1, c2)| c1 == c2)
         .map(|(c1, _c2)| c1)
         .collect()
@@ -42,9 +47,7 @@ fn common_letters(id1: &str, id2: &str) -> String {
 
 #[aoc(day2, part2)]
 pub fn solve(input: &str) -> String {
-    let box_ids: Vec<&str> = input.lines()
-                                .map(|line| line.trim())
-                                .collect();
+    let box_ids: Vec<&str> = input.lines().map(|line| line.trim()).collect();
 
     let correct_idxs = find_correct_boxes(&box_ids);
     let common_letters = common_letters(box_ids[correct_idxs.0], box_ids[correct_idxs.1]);
@@ -68,13 +71,9 @@ mod test {
 
     #[test]
     fn test_find_correct_boxes() {
-        let box_ids = vec!["abcde",
-                           "fghij",
-                           "klmno",
-                           "pqrst",
-                           "fguij",
-                           "axcye",
-                           "wvxyz"];
+        let box_ids = vec![
+            "abcde", "fghij", "klmno", "pqrst", "fguij", "axcye", "wvxyz",
+        ];
         let correct_idxs = find_correct_boxes(&box_ids);
         assert_eq!(correct_idxs, (1, 4));
     }

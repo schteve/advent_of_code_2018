@@ -102,12 +102,12 @@ impl Track {
 
     fn to_char(&self) -> char {
         match self {
-            Self::Horizontal   => '-',
-            Self::Vertical     => '|',
-            Self::CornerA      => '/',
-            Self::CornerB      => '\\',
+            Self::Horizontal => '-',
+            Self::Vertical => '|',
+            Self::CornerA => '/',
+            Self::CornerB => '\\',
             Self::Intersection => '+',
-            Self::Empty        => ' ',
+            Self::Empty => ' ',
         }
     }
 }
@@ -139,15 +139,13 @@ impl TrackMap {
             p.y += 1;
         }
 
-        Self {
-            tracks,
-            carts,
-        }
+        Self { tracks, carts }
     }
 
     fn tick(&mut self) {
         // Carts must be processed in order. Sort them by row and then by column.
-        self.carts.sort_by(|a, b| Point::cmp_y_x(&a.location, &b.location));
+        self.carts
+            .sort_by(|a, b| Point::cmp_y_x(&a.location, &b.location));
 
         for i in 0..self.carts.len() {
             if self.carts[i].crashed == true {
@@ -159,7 +157,8 @@ impl TrackMap {
             self.carts[i].location = next_point;
 
             for j in 0..self.carts.len() {
-                if self.carts[j].location == next_point && self.carts[j].crashed == false && j != i {
+                if self.carts[j].location == next_point && self.carts[j].crashed == false && j != i
+                {
                     // Crash!
                     self.carts[i].crashed = true;
                     self.carts[j].crashed = true;
@@ -177,7 +176,7 @@ impl TrackMap {
                         Cardinal::East => self.carts[i].orientation.turn(Turn::Left),
                         Cardinal::West => self.carts[i].orientation.turn(Turn::Left),
                     };
-                },
+                }
                 Some(Track::CornerB) => {
                     self.carts[i].orientation = match self.carts[i].orientation {
                         Cardinal::North => self.carts[i].orientation.turn(Turn::Left),
@@ -185,18 +184,16 @@ impl TrackMap {
                         Cardinal::East => self.carts[i].orientation.turn(Turn::Right),
                         Cardinal::West => self.carts[i].orientation.turn(Turn::Right),
                     };
-                },
-                Some(Track::Intersection) => {
-                    match self.carts[i].next_turn {
-                        NextTurn::Left => {
-                            self.carts[i].orientation = self.carts[i].orientation.turn(Turn::Left);
-                            self.carts[i].next_turn = NextTurn::Straight;
-                        },
-                        NextTurn::Straight => self.carts[i].next_turn = NextTurn::Right,
-                        NextTurn::Right => {
-                            self.carts[i].orientation = self.carts[i].orientation.turn(Turn::Right);
-                            self.carts[i].next_turn = NextTurn::Left;
-                        },
+                }
+                Some(Track::Intersection) => match self.carts[i].next_turn {
+                    NextTurn::Left => {
+                        self.carts[i].orientation = self.carts[i].orientation.turn(Turn::Left);
+                        self.carts[i].next_turn = NextTurn::Straight;
+                    }
+                    NextTurn::Straight => self.carts[i].next_turn = NextTurn::Right,
+                    NextTurn::Right => {
+                        self.carts[i].orientation = self.carts[i].orientation.turn(Turn::Right);
+                        self.carts[i].next_turn = NextTurn::Left;
                     }
                 },
                 Some(Track::Empty) => panic!("Unexpected empty track: {}", next_point),
@@ -206,11 +203,18 @@ impl TrackMap {
     }
 
     fn run_until_last_crash(&mut self) -> Point {
-        while self.carts.iter().filter(|&cart| cart.crashed == false).count() > 1 {
+        while self
+            .carts
+            .iter()
+            .filter(|&cart| cart.crashed == false)
+            .count()
+            > 1
+        {
             self.tick();
         }
 
-        self.carts.iter()
+        self.carts
+            .iter()
             .filter(|&cart| cart.crashed == false)
             .map(|cart| cart.location)
             .next()
@@ -220,10 +224,15 @@ impl TrackMap {
     fn get_range(&self) -> ((i32, i32), (i32, i32)) {
         let mut tracks_iter = self.tracks.iter();
         if let Some((point, _track)) = tracks_iter.next() {
-            tracks_iter.fold(((point.x, point.x), (point.y, point.y)),
-                |(acc_x, acc_y), (p, _)|
-                    ((acc_x.0.min(p.x), acc_x.1.max(p.x)),
-                     (acc_y.0.min(p.y), acc_y.1.max(p.y))))
+            tracks_iter.fold(
+                ((point.x, point.x), (point.y, point.y)),
+                |(acc_x, acc_y), (p, _)| {
+                    (
+                        (acc_x.0.min(p.x), acc_x.1.max(p.x)),
+                        (acc_y.0.min(p.y), acc_y.1.max(p.y)),
+                    )
+                },
+            )
         } else {
             ((0, 0), (0, 0))
         }
@@ -233,8 +242,8 @@ impl TrackMap {
 impl fmt::Display for TrackMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let range = self.get_range();
-        for y in (range.1).0 .. (range.1).1 {
-            for x in (range.0).0 .. (range.0).1 {
+        for y in (range.1).0..(range.1).1 {
+            for x in (range.0).0..(range.0).1 {
                 let p = Point { x, y };
                 if let Some(cart) = self.carts.iter().find(|c| c.location == p) {
                     write!(f, "{}", cart.orientation.to_arrow())?;

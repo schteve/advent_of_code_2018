@@ -49,25 +49,25 @@
     What is the size of the largest area that isn't infinite?
 */
 
-use regex::Regex;
 use super::common::Point;
+use regex::Regex;
 use std::collections::HashMap;
 
 struct LandingZone {
     coordinates: Vec<Point>,
-    area: HashMap<Point, usize>
+    area: HashMap<Point, usize>,
 }
 
 impl LandingZone {
     fn from_string(input: &str) -> Self {
         let re = Regex::new(r"(\d+), (\d+)").unwrap();
-        let coordinates: Vec<Point> = re.captures_iter(input)
-                                        .map(|cap|
-                                            Point {
-                                                x: cap[1].parse::<i32>().unwrap(),
-                                                y: cap[2].parse::<i32>().unwrap(),
-                                            })
-                                        .collect();
+        let coordinates: Vec<Point> = re
+            .captures_iter(input)
+            .map(|cap| Point {
+                x: cap[1].parse::<i32>().unwrap(),
+                y: cap[2].parse::<i32>().unwrap(),
+            })
+            .collect();
         Self {
             coordinates,
             area: HashMap::new(),
@@ -75,10 +75,12 @@ impl LandingZone {
     }
 
     fn closest_coord(&self, point: Point) -> usize {
-        let closest = self.coordinates.iter()
-                                    .enumerate()
-                                    .min_by_key(|&(_i, &coord)| Point::manhattan(point, coord))
-                                    .unwrap();
+        let closest = self
+            .coordinates
+            .iter()
+            .enumerate()
+            .min_by_key(|&(_i, &coord)| Point::manhattan(point, coord))
+            .unwrap();
         closest.0
     }
 
@@ -105,8 +107,8 @@ impl LandingZone {
 
     fn scan(&mut self) {
         let (x_range, y_range) = self.get_range();
-        for y in y_range.0 ..= y_range.1 {
-            for x in x_range.0 ..= x_range.1 {
+        for y in y_range.0..=y_range.1 {
+            for x in x_range.0..=x_range.1 {
                 let p = Point { x, y };
                 let closest = self.closest_coord(p);
                 self.area.insert(p, closest);
@@ -117,14 +119,16 @@ impl LandingZone {
     fn get_largest_finite(&mut self) -> u32 {
         // Count size of each area
         let mut original_size = vec![0; self.coordinates.len()];
-        self.area.values().for_each(|&value| original_size[value] += 1);
+        self.area
+            .values()
+            .for_each(|&value| original_size[value] += 1);
 
         // Add a ring to the outside of the area then count the size of each area again.
         let (x_range, y_range) = self.get_range();
         let x_range = (x_range.0 - 1, x_range.1 + 1);
         let y_range = (y_range.0 - 1, y_range.1 + 1);
         // Top and bottom
-        for x in x_range.0 ..= x_range.1 {
+        for x in x_range.0..=x_range.1 {
             let p = Point { x, y: y_range.0 };
             let closest = self.closest_coord(p);
             self.area.insert(p, closest);
@@ -134,7 +138,7 @@ impl LandingZone {
             self.area.insert(p, closest);
         }
         // Left and right
-        for y in y_range.0 ..= y_range.1 {
+        for y in y_range.0..=y_range.1 {
             let p = Point { x: x_range.0, y };
             let closest = self.closest_coord(p);
             self.area.insert(p, closest);
@@ -148,10 +152,12 @@ impl LandingZone {
         self.area.values().for_each(|&value| new_size[value] += 1);
 
         // Anything that increased in size is infinite and is disqualified.
-        let largest = original_size.iter().zip(new_size.iter())
-                        .filter_map(|(&orig, &new)| if orig == new { Some(orig) } else { None } )
-                        .max()
-                        .unwrap();
+        let largest = original_size
+            .iter()
+            .zip(new_size.iter())
+            .filter_map(|(&orig, &new)| if orig == new { Some(orig) } else { None })
+            .max()
+            .unwrap();
         largest
     }
 }

@@ -32,9 +32,10 @@ fn calculate_frequency(frequencies: &[i32]) -> i32 {
 
 #[aoc(day1, part1)]
 pub fn solve(input: &str) -> i32 {
-    let frequencies: Vec<i32> = input.lines()
-                                    .map(|line| line.trim().parse::<i32>().unwrap())
-                                    .collect();
+    let frequencies: Vec<i32> = input
+        .lines()
+        .map(|line| line.trim().parse::<i32>().unwrap())
+        .collect();
 
     let result = calculate_frequency(&frequencies);
     println!("Resulting frequency: {}", result);

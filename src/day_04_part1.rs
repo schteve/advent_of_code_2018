@@ -71,10 +71,10 @@ impl Timestamp {
         let caps = RE.captures(input).unwrap();
 
         Self {
-            year:   caps[1].parse::<u32>().unwrap(),
-            month:  caps[2].parse::<u32>().unwrap(),
-            day:    caps[3].parse::<u32>().unwrap(),
-            hour:   caps[4].parse::<u32>().unwrap(),
+            year: caps[1].parse::<u32>().unwrap(),
+            month: caps[2].parse::<u32>().unwrap(),
+            day: caps[3].parse::<u32>().unwrap(),
+            hour: caps[4].parse::<u32>().unwrap(),
             minute: caps[5].parse::<u32>().unwrap(),
         }
     }
@@ -101,7 +101,8 @@ impl Record {
     fn from_string(input: &str) -> Self {
         // Begin shift
         lazy_static! {
-            static ref RE_BEGIN_SHIFT: Regex = Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) Guard #(\d+) begins shift").unwrap();
+            static ref RE_BEGIN_SHIFT: Regex =
+                Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) Guard #(\d+) begins shift").unwrap();
         }
         if let Some(caps) = RE_BEGIN_SHIFT.captures(input) {
             return Self {
@@ -112,7 +113,8 @@ impl Record {
 
         // Fall asleep
         lazy_static! {
-            static ref RE_FALL_ASLEEP: Regex = Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) falls asleep").unwrap();
+            static ref RE_FALL_ASLEEP: Regex =
+                Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) falls asleep").unwrap();
         }
         if let Some(caps) = RE_FALL_ASLEEP.captures(input) {
             return Self {
@@ -123,7 +125,8 @@ impl Record {
 
         // Wake up
         lazy_static! {
-            static ref RE_WAKE_UP: Regex = Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) wakes up").unwrap();
+            static ref RE_WAKE_UP: Regex =
+                Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) wakes up").unwrap();
         }
         if let Some(caps) = RE_WAKE_UP.captures(input) {
             return Self {
@@ -151,31 +154,36 @@ impl Schedule {
                 GuardAction::BeginShift(g_id) => guard_id = Some(g_id),
                 GuardAction::FallAsleep => asleep_time = Some(r.timestamp),
                 GuardAction::WakeUp => {
-                    let timeline = timelines.entry(guard_id.unwrap()).or_insert_with(|| vec![0; 60]);
-                    for m in asleep_time.unwrap().minute .. r.timestamp.minute {
+                    let timeline = timelines
+                        .entry(guard_id.unwrap())
+                        .or_insert_with(|| vec![0; 60]);
+                    for m in asleep_time.unwrap().minute..r.timestamp.minute {
                         timeline[m as usize] += 1;
                     }
-                },
+                }
             }
         }
 
-        Self {
-            timelines,
-        }
+        Self { timelines }
     }
 
     fn strategy_1(&self) -> u32 {
         // Find ID of sleepiest guard
-        let (&guard_id, _timeline) = self.timelines.iter()
-                                                .max_by_key(|(_g_id, timeline)| timeline.iter().sum::<u32>())
-                                                .unwrap();
+        let (&guard_id, _timeline) = self
+            .timelines
+            .iter()
+            .max_by_key(|(_g_id, timeline)| timeline.iter().sum::<u32>())
+            .unwrap();
 
         // Get the minute at which this guard is most asleep
-        let (i, _minute) = self.timelines.get(&guard_id).expect("Invalid guard ID")
-                                        .iter()
-                                        .enumerate()
-                                        .max_by_key(|(_i, &minute)| minute)
-                                        .unwrap();
+        let (i, _minute) = self
+            .timelines
+            .get(&guard_id)
+            .expect("Invalid guard ID")
+            .iter()
+            .enumerate()
+            .max_by_key(|(_i, &minute)| minute)
+            .unwrap();
 
         encode_answer(guard_id, i as u32)
     }
@@ -187,7 +195,10 @@ fn encode_answer(guard_id: u32, minute: u32) -> u32 {
 
 #[aoc(day4, part1)]
 pub fn solve(input: &str) -> u32 {
-    let mut records: Vec<Record> = input.lines().map(|line| Record::from_string(line)).collect();
+    let mut records: Vec<Record> = input
+        .lines()
+        .map(|line| Record::from_string(line))
+        .collect();
     records.sort_by_key(|r| r.timestamp.get_u32());
     //records.iter().for_each(|r| println!("{:?}", r));
 
@@ -205,8 +216,8 @@ mod test {
 
     #[test]
     fn test_strategy_1() {
-        let input =
-"[1518-11-01 00:00] Guard #10 begins shift
+        let input = "\
+[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
 [1518-11-01 00:25] wakes up
 [1518-11-01 00:30] falls asleep
@@ -223,7 +234,10 @@ mod test {
 [1518-11-05 00:03] Guard #99 begins shift
 [1518-11-05 00:45] falls asleep
 [1518-11-05 00:55] wakes up";
-        let records: Vec<Record> = input.lines().map(|line| Record::from_string(line)).collect();
+        let records: Vec<Record> = input
+            .lines()
+            .map(|line| Record::from_string(line))
+            .collect();
 
         let schedule = Schedule::from_records(&records);
         let answer = schedule.strategy_1();

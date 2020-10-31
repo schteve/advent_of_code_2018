@@ -6,7 +6,7 @@
 */
 
 use regex::Regex;
-use std::ops::{ Index, IndexMut };
+use std::ops::{Index, IndexMut};
 
 #[derive(Clone, Eq, PartialEq)]
 struct State([u32; 4]);
@@ -46,9 +46,9 @@ impl Instruction {
         let mut split = input.trim().split(' ');
 
         Self {
-            opcode:   split.next().unwrap().parse::<u8>().unwrap(),
-            input_a:  split.next().unwrap().parse::<u32>().unwrap(),
-            input_b:  split.next().unwrap().parse::<u32>().unwrap(),
+            opcode: split.next().unwrap().parse::<u8>().unwrap(),
+            input_a: split.next().unwrap().parse::<u32>().unwrap(),
+            input_b: split.next().unwrap().parse::<u32>().unwrap(),
             output_c: split.next().unwrap().parse::<u32>().unwrap(),
         }
     }
@@ -93,23 +93,23 @@ impl Instruction {
 
     fn dispatch_as(&self, input: State, function_code: u8) -> Result<State, Error> {
         match function_code {
-            0  => self.addr(input),
-            1  => self.addi(input),
-            2  => self.mulr(input),
-            3  => self.muli(input),
-            4  => self.banr(input),
-            5  => self.bani(input),
-            6  => self.borr(input),
-            7  => self.bori(input),
-            8  => self.setr(input),
-            9  => self.seti(input),
+            0 => self.addr(input),
+            1 => self.addi(input),
+            2 => self.mulr(input),
+            3 => self.muli(input),
+            4 => self.banr(input),
+            5 => self.bani(input),
+            6 => self.borr(input),
+            7 => self.bori(input),
+            8 => self.setr(input),
+            9 => self.seti(input),
             10 => self.gtir(input),
             11 => self.gtri(input),
             12 => self.gtrr(input),
             13 => self.eqir(input),
             14 => self.eqri(input),
             15 => self.eqrr(input),
-            _  => Err(Error::InvalidFunctioncode),
+            _ => Err(Error::InvalidFunctioncode),
         }
     }
 
@@ -295,35 +295,42 @@ struct Sample {
 }
 
 impl Sample {
-    fn many_from_string(input: &str) -> (Vec<Self>, usize) { // A vector of samples, and the offset into the input where matching finished consuming
+    fn many_from_string(input: &str) -> (Vec<Self>, usize) {
+        // A vector of samples, and the offset into the input where matching finished consuming
         let re = Regex::new(r"Before: \[(\d+), (\d+), (\d+), (\d+)\]\n((?:\d+\s*)+)\nAfter:  \[(\d+), (\d+), (\d+), (\d+)\]").unwrap();
         let mut consumed_offset = 0;
-        let samples = re.captures_iter(input)
+        let samples = re
+            .captures_iter(input)
             .map(|cap| {
                 consumed_offset = cap.get(cap.len() - 1).unwrap().end(); // The last capture's endpoint in the haystack
                 Self {
-                    before: State([cap[1].parse::<u32>().unwrap(),
-                                   cap[2].parse::<u32>().unwrap(),
-                                   cap[3].parse::<u32>().unwrap(),
-                                   cap[4].parse::<u32>().unwrap()]),
+                    before: State([
+                        cap[1].parse::<u32>().unwrap(),
+                        cap[2].parse::<u32>().unwrap(),
+                        cap[3].parse::<u32>().unwrap(),
+                        cap[4].parse::<u32>().unwrap(),
+                    ]),
                     op: Instruction::from_string(&cap[5]),
-                    after: State([cap[6].parse::<u32>().unwrap(),
-                                  cap[7].parse::<u32>().unwrap(),
-                                  cap[8].parse::<u32>().unwrap(),
-                                  cap[9].parse::<u32>().unwrap()]),
+                    after: State([
+                        cap[6].parse::<u32>().unwrap(),
+                        cap[7].parse::<u32>().unwrap(),
+                        cap[8].parse::<u32>().unwrap(),
+                        cap[9].parse::<u32>().unwrap(),
+                    ]),
                 }
             })
             .collect();
         (samples, consumed_offset)
     }
 
-    fn find_possible_opcodes(&self) -> Vec<u8> { // Returns a vec of all possible function codes
-        (0..16).map(|i| (i, self.op.dispatch_as(self.before.clone(), i)))
-            .filter(|(_i, result)|
-                match result {
-                    Ok(x) => x == &self.after,
-                    _ => false,
-                })
+    fn find_possible_opcodes(&self) -> Vec<u8> {
+        // Returns a vec of all possible function codes
+        (0..16)
+            .map(|i| (i, self.op.dispatch_as(self.before.clone(), i)))
+            .filter(|(_i, result)| match result {
+                Ok(x) => x == &self.after,
+                _ => false,
+            })
             .map(|(i, _result)| i)
             .collect()
     }
@@ -332,7 +339,7 @@ impl Sample {
 struct ChronalComputer {
     state: State,
     program: Vec<Instruction>,
-    opcode_lookup: [u8; 16]
+    opcode_lookup: [u8; 16],
 }
 
 impl ChronalComputer {
@@ -341,7 +348,8 @@ impl ChronalComputer {
         let opcode_lookup = ChronalComputer::deduce_opcodes(&samples);
 
         let re = Regex::new(r"\d+ \d+ \d+ \d+").unwrap();
-        let program: Vec<Instruction> = re.captures_iter(&input[offset..])
+        let program: Vec<Instruction> = re
+            .captures_iter(&input[offset..])
             .map(|cap| Instruction::from_string(&cap[0]))
             .collect();
 
@@ -355,7 +363,8 @@ impl ChronalComputer {
     fn deduce_opcodes(samples: &[Sample]) -> [u8; 16] {
         let mut decoded: [Option<u8>; 16] = [None; 16]; // A mapping of opcode to function code
 
-        let mut sample_func_codes: Vec<Vec<u8>> = samples.iter()
+        let mut sample_func_codes: Vec<Vec<u8>> = samples
+            .iter()
             .map(|sample| sample.find_possible_opcodes())
             .collect();
 
@@ -393,8 +402,12 @@ impl ChronalComputer {
     }
 
     fn run_program(&mut self) -> u32 {
-        self.state = self.program.iter()
-            .fold(self.state.clone(), |state, instr| instr.dispatch(state, &self.opcode_lookup).unwrap());
+        self.state = self
+            .program
+            .iter()
+            .fold(self.state.clone(), |state, instr| {
+                instr.dispatch(state, &self.opcode_lookup).unwrap()
+            });
 
         self.state[0]
     }

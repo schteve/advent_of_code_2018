@@ -40,7 +40,10 @@ impl Grid {
     fn fuel_grid(&mut self, serial: i32) {
         for x in 0..self.size {
             for y in 0..self.size {
-                let p = Point { x: x as i32, y: y as i32 };
+                let p = Point {
+                    x: x as i32,
+                    y: y as i32,
+                };
                 let power = Grid::power_level(p, serial);
                 self.power.insert((p, 1), power);
             }
@@ -83,7 +86,7 @@ impl Grid {
                 };
                 total_power += self.total_power(p, 1);
             }
-            for y in 0 .. (size - 1) {
+            for y in 0..(size - 1) {
                 let p = Point {
                     x: point.x + size as i32 - 1,
                     y: point.y + y as i32,
@@ -100,10 +103,10 @@ impl Grid {
         let mut max_power = None;
         let mut max_point = None;
         let mut max_size = None;
-        for size in 2 ..= self.size {
+        for size in 2..=self.size {
             //println!("Size: {}", size);
-            for x in 0 .. (self.size - size) {
-                for y in 0 .. (self.size - size) {
+            for x in 0..(self.size - size) {
+                for y in 0..(self.size - size) {
                     let p = Point {
                         x: x as i32,
                         y: y as i32,
@@ -129,7 +132,10 @@ pub fn solve(input: &str) -> String {
     grid.fuel_grid(serial);
 
     let (max_power_point, max_power_size) = grid.max_power_point();
-    println!("Largest total power: {}, {}", max_power_point, max_power_size);
+    println!(
+        "Largest total power: {}, {}",
+        max_power_point, max_power_size
+    );
     assert_eq!(max_power_point, Point { x: 236, y: 252 });
     assert_eq!(max_power_size, 12);
 

@@ -1,4 +1,3 @@
-
 use std::cmp::Ordering;
 
 struct LLNode {
@@ -81,7 +80,8 @@ impl LinkedListCirc {
             free_idx
         } else {
             let new_node_idx = self.data.len();
-            let new_node = LLNode { // Dummy values
+            let new_node = LLNode {
+                // Dummy values
                 prev: 0,
                 next: 0,
                 value: 0,
