@@ -11,10 +11,10 @@ pub enum Cardinal {
 impl Cardinal {
     pub fn from_arrow(c: char) -> Self {
         match c {
-            '^' => Cardinal::North,
-            'v' => Cardinal::South,
-            '>' => Cardinal::East,
-            '<' => Cardinal::West,
+            '^' => Self::North,
+            'v' => Self::South,
+            '>' => Self::East,
+            '<' => Self::West,
             _ => panic!("Cardinal: invalid input '{}'", c),
         }
     }
@@ -25,6 +25,25 @@ impl Cardinal {
             Self::South => 'v',
             Self::East => '>',
             Self::West => '<',
+        }
+    }
+
+    pub fn from_char(c: char) -> Self {
+        match c {
+            'N' | 'n' => Self::North,
+            'S' | 's' => Self::South,
+            'E' | 'e' => Self::East,
+            'W' | 'w' => Self::West,
+            _ => panic!("Invalid cardinal character: {}", c),
+        }
+    }
+
+    pub fn to_char(&self) -> char {
+        match *self {
+            Self::North => 'N',
+            Self::South => 'S',
+            Self::East => 'E',
+            Self::West => 'W',
         }
     }
 
