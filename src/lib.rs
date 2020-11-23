@@ -48,5 +48,7 @@ mod day_20_part1;
 mod day_20_part2;
 mod day_21_part1;
 mod day_21_part2;
+mod day_22_part1;
+mod day_22_part2;
 
 aoc_lib! { year = 2018 }

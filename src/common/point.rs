@@ -14,6 +14,20 @@ impl Point {
         Self { x: 0, y: 0 }
     }
 
+    pub fn from_string(input: &str) -> Self {
+        // Accepts the following, with whitespace allowed anyhwere:
+        //  123,456
+        // Equivalent regex: \s+(\d+)\s+,\s+(\d+)\s+
+        let mut parts = input.trim().split(',');
+        let a = parts.next().unwrap().trim().parse::<i32>();
+        let b = parts.next().unwrap().trim().parse::<i32>();
+        if let (Ok(x), Ok(y)) = (a, b) {
+            Point { x, y }
+        } else {
+            panic!("Invalid point format");
+        }
+    }
+
     pub fn manhattan(a: Self, b: Self) -> u32 {
         let delta = a - b;
         let distance = delta.x.abs() + delta.y.abs();
