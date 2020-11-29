@@ -336,7 +336,7 @@ struct BattleMap {
 impl BattleMap {
     fn from_string(input: &str) -> Self {
         let mut tiles = BTreeMap::new();
-        let mut p = Point { x: 0, y: 0 };
+        let mut p = Point::new();
         for line in input.trim().lines() {
             for c in line.chars() {
                 tiles.insert(p, Tile::from_char(c));

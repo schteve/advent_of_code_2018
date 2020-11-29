@@ -146,7 +146,7 @@ impl Cave {
             gi
         } else {
             // Otherwise, calculate it
-            let gi = if p == (Point { x: 0, y: 0 }) {
+            let gi = if p == Point::new() {
                 0
             } else if p == self.target {
                 0
@@ -216,7 +216,7 @@ impl fmt::Display for Cave {
         for y in 0..=self.target.y {
             for x in 0..=self.target.x {
                 let p = Point { x, y };
-                if p == (Point { x: 0, y: 0 }) {
+                if p == Point::new() {
                     write!(f, "M")?;
                 } else if p == self.target {
                     write!(f, "T")?;

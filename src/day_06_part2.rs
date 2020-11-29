@@ -50,7 +50,6 @@
 */
 
 use super::common::Point;
-use regex::Regex;
 use std::collections::HashMap;
 
 struct LandingZone {
@@ -60,14 +59,7 @@ struct LandingZone {
 
 impl LandingZone {
     fn from_string(input: &str) -> Self {
-        let re = Regex::new(r"(\d+), (\d+)").unwrap();
-        let coordinates: Vec<Point> = re
-            .captures_iter(input)
-            .map(|cap| Point {
-                x: cap[1].parse::<i32>().unwrap(),
-                y: cap[2].parse::<i32>().unwrap(),
-            })
-            .collect();
+        let coordinates: Vec<Point> = input.lines().map(Point::from_string).collect();
         Self {
             coordinates,
             area: HashMap::new(),
@@ -135,14 +127,13 @@ mod test {
 
     #[test]
     fn test_count_points_under_size() {
-        let input = "
+        let input = "\
 1, 1
 1, 6
 8, 3
 3, 4
 5, 5
-8, 9
-";
+8, 9";
         let mut landing_zone = LandingZone::from_string(input);
         landing_zone.scan();
         let region_size = landing_zone.count_points_under_size(32);

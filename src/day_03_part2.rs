@@ -7,36 +7,34 @@
     What is the ID of the only claim that doesn't overlap?
 */
 
+use crate::common::Point;
 use regex::Regex;
 use std::collections::HashMap;
 
 struct Claim {
     id: u32,
-    location: (u32, u32),
+    location: Point,
     size: (u32, u32),
 }
 
 impl Claim {
     fn from_string(input: &str) -> Self {
-        let re = Regex::new(r"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)").unwrap();
+        let re = Regex::new(r"#(\d+) @ (\d+,\d+): (\d+)x(\d+)").unwrap();
         let caps = re.captures(input).unwrap();
 
         Self {
             id: caps[1].parse::<u32>().unwrap(),
-            location: (
-                caps[2].parse::<u32>().unwrap(),
-                caps[3].parse::<u32>().unwrap(),
-            ),
+            location: Point::from_string(&caps[2]),
             size: (
+                caps[3].parse::<u32>().unwrap(),
                 caps[4].parse::<u32>().unwrap(),
-                caps[5].parse::<u32>().unwrap(),
             ),
         }
     }
 }
 
 struct Fabric {
-    area: HashMap<(u32, u32), u32>,
+    area: HashMap<Point, u32>,
 }
 
 impl Fabric {
@@ -44,9 +42,9 @@ impl Fabric {
         let mut area = HashMap::new();
 
         for claim in claims {
-            for y in 0..claim.size.1 {
-                for x in 0..claim.size.0 {
-                    let location = (claim.location.0 + x, claim.location.1 + y);
+            for y in 0..claim.size.1 as i32 {
+                for x in 0..claim.size.0 as i32 {
+                    let location = claim.location + Point { x, y };
                     let count = area.entry(location).or_insert(0);
                     *count += 1;
                 }
@@ -61,9 +59,9 @@ impl Fabric {
     }
 
     fn is_claim_intact(&self, claim: &Claim) -> bool {
-        for y in 0..claim.size.1 {
-            for x in 0..claim.size.0 {
-                let location = (claim.location.0 + x, claim.location.1 + y);
+        for y in 0..claim.size.1 as i32 {
+            for x in 0..claim.size.0 as i32 {
+                let location = claim.location + Point { x, y };
                 if self.area[&location] != 1 {
                     return false;
                 }
