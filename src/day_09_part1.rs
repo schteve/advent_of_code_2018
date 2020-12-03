@@ -50,7 +50,7 @@
     What is the winning Elf's score?
 */
 
-use super::common::modulo;
+use crate::common::modulo;
 use regex::Regex;
 
 struct Game {

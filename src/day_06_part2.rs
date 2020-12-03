@@ -49,7 +49,7 @@
     What is the size of the largest area that isn't infinite?
 */
 
-use super::common::Point;
+use crate::common::Point;
 use std::collections::HashMap;
 
 struct LandingZone {

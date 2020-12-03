@@ -5,7 +5,7 @@
     What would the new winning Elf's score be if the number of the last marble were 100 times larger?
 */
 
-use super::common::LinkedListCirc;
+use crate::common::LinkedListCirc;
 use regex::Regex;
 
 struct Game {

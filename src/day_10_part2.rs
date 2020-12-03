@@ -5,7 +5,7 @@
     Impressed by your sub-hour communication capabilities, the Elves are curious: exactly how many seconds would they have needed to wait for that message to appear?
 */
 
-use super::common::Point;
+use crate::common::Point;
 use regex::Regex;
 use std::fmt;
 

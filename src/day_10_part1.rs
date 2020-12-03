@@ -141,7 +141,7 @@
     What message will eventually appear in the sky?
 */
 
-use super::common::Point;
+use crate::common::Point;
 use regex::Regex;
 use std::fmt;
 
