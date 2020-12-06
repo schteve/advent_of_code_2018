@@ -147,7 +147,15 @@
 
 use crate::common::Cardinal;
 use crate::common::Point;
-use regex::Regex;
+use nom::{
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::{digit1, multispace0},
+    combinator::{map_res, success},
+    multi::many1,
+    sequence::{delimited, pair, preceded, tuple},
+    IResult,
+};
 use std::collections::HashMap;
 use std::fmt;
 
@@ -181,31 +189,7 @@ struct GeologicMap {
 
 impl GeologicMap {
     fn from_string(input: &str) -> Self {
-        let mut tiles = HashMap::new();
-
-        let re_x = Regex::new(r"x=(\d+), y=(\d+)..(\d+)").unwrap();
-        let re_y = Regex::new(r"y=(\d+), x=(\d+)..(\d+)").unwrap();
-
-        for cap_x in re_x.captures_iter(input) {
-            let x = cap_x[1].parse::<i32>().unwrap();
-            let y_0 = cap_x[2].parse::<i32>().unwrap();
-            let y_1 = cap_x[3].parse::<i32>().unwrap();
-
-            for y in y_0..=y_1 {
-                tiles.insert(Point { x, y }, Tile::Clay);
-            }
-        }
-
-        for cap_y in re_y.captures_iter(input) {
-            let y = cap_y[1].parse::<i32>().unwrap();
-            let x_0 = cap_y[2].parse::<i32>().unwrap();
-            let x_1 = cap_y[3].parse::<i32>().unwrap();
-
-            for x in x_0..=x_1 {
-                tiles.insert(Point { x, y }, Tile::Clay);
-            }
-        }
-
+        let mut tiles = Self::parser(input).unwrap().1;
         let range = Point::get_range(tiles.keys()).unwrap(); // Must not include the spring so we do this first
 
         let spring = Point { x: 500, y: 0 };
@@ -217,6 +201,46 @@ impl GeologicMap {
             y_range: range.1,
             spring,
         }
+    }
+
+    fn parser(input: &str) -> IResult<&str, HashMap<Point, Tile>> {
+        let (input, values) = many1(alt((
+            tuple((
+                success(true),
+                map_res(
+                    delimited(pair(multispace0, tag("x=")), digit1, tag(", ")),
+                    |x: &str| x.parse::<i32>(),
+                ),
+                map_res(preceded(tag("y="), digit1), |y: &str| y.parse::<i32>()),
+                map_res(preceded(tag(".."), digit1), |y: &str| y.parse::<i32>()),
+            )),
+            tuple((
+                success(false),
+                map_res(
+                    delimited(pair(multispace0, tag("y=")), digit1, tag(", ")),
+                    |y: &str| y.parse::<i32>(),
+                ),
+                map_res(preceded(tag("x="), digit1), |x: &str| x.parse::<i32>()),
+                map_res(preceded(tag(".."), digit1), |x: &str| x.parse::<i32>()),
+            )),
+        )))(input)?;
+
+        let mut tiles = HashMap::new();
+        for (x_first, a, b0, b1) in values {
+            if x_first == true {
+                let x = a;
+                for y in b0..=b1 {
+                    tiles.insert(Point { x, y }, Tile::Clay);
+                }
+            } else {
+                let y = a;
+                for x in b0..=b1 {
+                    tiles.insert(Point { x, y }, Tile::Clay);
+                }
+            }
+        }
+
+        Ok((input, tiles))
     }
 
     fn fill_path(&mut self, points: &[Point], tile: Tile) {
@@ -378,7 +402,7 @@ mod test {
 
     #[test]
     fn test_water_flow() {
-        let input = "
+        let input = "\
 x=495, y=2..7
 y=7, x=495..501
 x=501, y=3..7

@@ -23,7 +23,14 @@
     What is the lowest non-negative integer value for register 0 that causes the program to halt after executing the fewest instructions? (Executing the same instruction multiple times counts as multiple instructions executed.)
 */
 
-use regex::Regex;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{alpha1, digit1, multispace0, space1},
+    combinator::map_res,
+    multi::many1,
+    sequence::{pair, preceded, tuple},
+    IResult,
+};
 use std::ops::{Index, IndexMut};
 
 const NUM_REGISTERS: usize = 6;
@@ -76,10 +83,15 @@ struct Instruction {
 }
 
 impl Instruction {
-    fn from_string(input: &str) -> Option<Self> {
-        let mut split = input.trim().split(' ');
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (name, a, b, c)) = tuple((
+            preceded(multispace0, alpha1),
+            preceded(space1, map_res(digit1, |a: &str| a.parse::<u64>())),
+            preceded(space1, map_res(digit1, |b: &str| b.parse::<u64>())),
+            preceded(space1, map_res(digit1, |c: &str| c.parse::<u64>())),
+        ))(input)?;
 
-        let opcode = match split.next().unwrap() {
+        let opcode = match name {
             "addr" => 0,
             "addi" => 1,
             "mulr" => 2,
@@ -96,34 +108,18 @@ impl Instruction {
             "eqir" => 13,
             "eqri" => 14,
             "eqrr" => 15,
-            _ => return None,
+            _ => panic!("Invalid opcode"),
         };
 
-        let input_a = split.next().unwrap().parse::<u64>();
-        if input_a.is_err() {
-            return None;
-        }
-
-        let input_b = split.next().unwrap().parse::<u64>();
-        if input_b.is_err() {
-            return None;
-        }
-
-        let output_c = split.next().unwrap().parse::<u64>();
-        if output_c.is_err() {
-            return None;
-        }
-
-        Some(Self {
-            opcode,
-            input_a: input_a.unwrap(),
-            input_b: input_b.unwrap(),
-            output_c: output_c.unwrap(),
-        })
-    }
-
-    fn many_from_string(input: &str) -> Vec<Self> {
-        input.lines().filter_map(Self::from_string).collect()
+        Ok((
+            input,
+            Self {
+                opcode,
+                input_a: a,
+                input_b: b,
+                output_c: c,
+            },
+        ))
     }
 
     fn validate_opcode(&self) -> Result<(), Error> {
@@ -364,19 +360,24 @@ struct ChronalComputer {
 
 impl ChronalComputer {
     fn from_string(input: &str) -> Self {
-        let ip_re = Regex::new(r"#ip (\d)").unwrap();
-        let ip_caps = ip_re.captures(input).unwrap();
-        let ip_reg = ip_caps[1].parse::<usize>().unwrap();
-        assert!(ip_reg < NUM_REGISTERS);
+        Self::parser(input).unwrap().1
+    }
 
-        let program: Vec<Instruction> = Instruction::many_from_string(input);
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (ip_reg, program)) = pair(
+            preceded(tag("#ip "), map_res(digit1, |x: &str| x.parse::<usize>())),
+            many1(Instruction::parser),
+        )(input)?;
 
-        Self {
-            state: State([0; NUM_REGISTERS]),
-            program,
-            ip_reg,
-            ip: 0,
-        }
+        Ok((
+            input,
+            Self {
+                state: State([0; NUM_REGISTERS]),
+                program,
+                ip_reg,
+                ip: 0,
+            },
+        ))
     }
 
     fn run_program(&mut self) -> u64 {

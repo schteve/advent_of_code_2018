@@ -17,8 +17,14 @@
     Find the coordinates that are in range of the largest number of nanobots. What is the shortest manhattan distance between any of those points and 0,0,0?
 */
 
-use lazy_static::lazy_static;
-use regex::Regex;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{digit1, multispace0, one_of},
+    combinator::{map_res, recognize},
+    multi::many1,
+    sequence::{pair, preceded, tuple},
+    IResult,
+};
 use std::cmp;
 
 fn manhattan(a: (i32, i32, i32), b: (i32, i32, i32)) -> u32 {
@@ -32,21 +38,41 @@ struct NanoBot {
 }
 
 impl NanoBot {
-    fn from_string(input: &str) -> Self {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"pos=<(-?\d+),(-?\d+),(-?\d+)>, r=(\d+)").unwrap();
-        }
-        let caps = RE.captures(input.trim()).unwrap();
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (position, signal_radius)) = preceded(
+            multispace0,
+            pair(
+                tuple((
+                    preceded(
+                        tag("pos=<"),
+                        map_res(recognize(many1(one_of("-01234567890"))), |x: &str| {
+                            x.parse::<i32>()
+                        }),
+                    ),
+                    preceded(
+                        tag(","),
+                        map_res(recognize(many1(one_of("-01234567890"))), |y: &str| {
+                            y.parse::<i32>()
+                        }),
+                    ),
+                    preceded(
+                        tag(","),
+                        map_res(recognize(many1(one_of("-01234567890"))), |z: &str| {
+                            z.parse::<i32>()
+                        }),
+                    ),
+                )),
+                preceded(tag(">, r="), map_res(digit1, |r: &str| r.parse::<u32>())),
+            ),
+        )(input)?;
 
-        let x = caps[1].parse::<i32>().unwrap();
-        let y = caps[2].parse::<i32>().unwrap();
-        let z = caps[3].parse::<i32>().unwrap();
-        let r = caps[4].parse::<u32>().unwrap();
-
-        Self {
-            position: (x, y, z),
-            signal_radius: r,
-        }
+        Ok((
+            input,
+            Self {
+                position,
+                signal_radius,
+            },
+        ))
     }
 
     fn is_point_in_range(&self, p: (i32, i32, i32)) -> bool {
@@ -248,7 +274,10 @@ struct Swarm {
 
 impl Swarm {
     fn from_string(input: &str) -> Self {
-        let bots: Vec<NanoBot> = input.lines().map(NanoBot::from_string).collect();
+        let bots: Vec<NanoBot> = input
+            .lines()
+            .map(|line| NanoBot::parser(line).unwrap().1)
+            .collect();
         Self { bots }
     }
 
@@ -376,15 +405,15 @@ mod test {
     #[test]
     fn find_bots_in_range_of_strongest() {
         let input = "\
-            pos=<0,0,0>, r=4
-            pos=<1,0,0>, r=1
-            pos=<4,0,0>, r=3
-            pos=<0,2,0>, r=1
-            pos=<0,5,0>, r=3
-            pos=<0,0,3>, r=1
-            pos=<1,1,1>, r=1
-            pos=<1,1,2>, r=1
-            pos=<1,3,1>, r=1";
+pos=<0,0,0>, r=4
+pos=<1,0,0>, r=1
+pos=<4,0,0>, r=3
+pos=<0,2,0>, r=1
+pos=<0,5,0>, r=3
+pos=<0,0,3>, r=1
+pos=<1,1,1>, r=1
+pos=<1,1,2>, r=1
+pos=<1,3,1>, r=1";
         let swarm = Swarm::from_string(input);
         let in_range = swarm.find_bots_in_range_of_strongest();
         assert_eq!(in_range, 7);
@@ -393,12 +422,12 @@ mod test {
     #[test]
     fn test_swarm_intersection() {
         let input = "\
-            pos=<10,12,12>, r=2
-            pos=<12,14,12>, r=2
-            pos=<16,12,12>, r=4
-            pos=<14,14,14>, r=6
-            pos=<50,50,50>, r=200
-            pos=<10,10,10>, r=5";
+pos=<10,12,12>, r=2
+pos=<12,14,12>, r=2
+pos=<16,12,12>, r=4
+pos=<14,14,14>, r=6
+pos=<50,50,50>, r=200
+pos=<10,10,10>, r=5";
         let swarm = Swarm::from_string(input);
 
         // All bots do not intersect
@@ -423,12 +452,12 @@ mod test {
     #[test]
     fn find_distance_to_points_in_range_of_most() {
         let input = "\
-            pos=<10,12,12>, r=2
-            pos=<12,14,12>, r=2
-            pos=<16,12,12>, r=4
-            pos=<14,14,14>, r=6
-            pos=<50,50,50>, r=200
-            pos=<10,10,10>, r=5";
+pos=<10,12,12>, r=2
+pos=<12,14,12>, r=2
+pos=<16,12,12>, r=4
+pos=<14,14,14>, r=6
+pos=<50,50,50>, r=200
+pos=<10,10,10>, r=5";
         let swarm = Swarm::from_string(input);
         let best_dist = swarm.find_distance_to_points_in_range_of_most();
         assert_eq!(best_dist, 36);

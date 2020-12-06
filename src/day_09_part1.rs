@@ -51,7 +51,13 @@
 */
 
 use crate::common::modulo;
-use regex::Regex;
+use nom::{
+    bytes::complete::tag,
+    character::complete::digit1,
+    combinator::map_res,
+    sequence::{delimited, pair},
+    IResult,
+};
 
 struct Game {
     max_player: u32,
@@ -64,23 +70,30 @@ struct Game {
 
 impl Game {
     fn from_string(input: &str) -> Self {
-        let re = Regex::new(r"(\d+) players; last marble is worth (\d+) points").unwrap();
-        let caps = re.captures(input).unwrap();
+        Self::parser(input).unwrap().1
+    }
 
-        let max_player = caps[1].parse::<u32>().unwrap();
-        let max_marble = caps[2].parse::<u32>().unwrap();
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (max_player, max_marble)) = pair(
+            map_res(digit1, |p: &str| p.parse::<u32>()),
+            delimited(
+                tag(" players; last marble is worth "),
+                map_res(digit1, |m: &str| m.parse::<u32>()),
+                tag(" points"),
+            ),
+        )(input)?;
 
-        let mut state = Vec::new();
-        state.push(0);
-
-        Self {
-            max_player,
-            max_marble,
-            state,
-            current_player: 0,
-            current_marble: 0,
-            player_score: vec![0; max_player as usize],
-        }
+        Ok((
+            input,
+            Self {
+                max_player,
+                max_marble,
+                state: vec![0],
+                current_player: 0,
+                current_marble: 0,
+                player_score: vec![0; max_player as usize],
+            },
+        ))
     }
 
     fn place_marble(&mut self, value: u32, offset: i32) {

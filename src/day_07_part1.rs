@@ -37,7 +37,13 @@
     In what order should the steps in your instructions be completed?
 */
 
-use regex::Regex;
+use nom::{
+    bytes::complete::tag,
+    character::complete::anychar,
+    combinator::map,
+    sequence::{delimited, pair, preceded},
+    IResult,
+};
 use std::collections::HashMap;
 
 struct Instructions {
@@ -51,10 +57,8 @@ impl Instructions {
         let mut graph = HashMap::new();
         let mut reqs = HashMap::new();
 
-        let re = Regex::new(r"Step (\w) must be finished before step (\w) can begin.").unwrap();
-        for cap in re.captures_iter(input) {
-            let parent = cap[1].chars().next().unwrap();
-            let child = cap[2].chars().next().unwrap();
+        for line in input.lines() {
+            let (parent, child) = Self::parser(line).unwrap().1;
 
             let children = graph.entry(parent).or_insert_with(Vec::new);
             children.push(child);
@@ -84,6 +88,19 @@ impl Instructions {
         root.sort_unstable();
 
         Self { graph, reqs, root }
+    }
+
+    fn parser(input: &str) -> IResult<&str, (char, char)> {
+        let (input, (parent, child)) = pair(
+            preceded(tag("Step "), map(anychar, |c| c)),
+            delimited(
+                tag(" must be finished before step "),
+                map(anychar, |c| c),
+                tag(" can begin."),
+            ),
+        )(input)?;
+
+        Ok((input, (parent, child)))
     }
 
     fn emit_order(&self) -> String {
@@ -130,7 +147,7 @@ mod test {
 
     #[test]
     fn test_emit_order() {
-        let input = "
+        let input = "\
 Step C must be finished before step A can begin.
 Step C must be finished before step F can begin.
 Step A must be finished before step B can begin.

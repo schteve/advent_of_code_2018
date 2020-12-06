@@ -61,11 +61,38 @@
     Ignoring the opcode numbers, how many samples in your puzzle input behave like three or more opcodes?
 */
 
-use regex::Regex;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{char, digit1, multispace0},
+    combinator::map_res,
+    multi::many1,
+    sequence::{delimited, pair, preceded, terminated, tuple},
+    IResult,
+};
 use std::ops::{Index, IndexMut};
 
 #[derive(Clone, Eq, PartialEq)]
 struct State([u32; 4]);
+
+impl State {
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (a, b, c, d)) = tuple((
+            preceded(
+                pair(multispace0, char('[')),
+                map_res(digit1, |x: &str| x.parse::<u32>()),
+            ),
+            preceded(tag(", "), map_res(digit1, |x: &str| x.parse::<u32>())),
+            preceded(tag(", "), map_res(digit1, |x: &str| x.parse::<u32>())),
+            delimited(
+                tag(", "),
+                map_res(digit1, |x: &str| x.parse::<u32>()),
+                char(']'),
+            ),
+        ))(input)?;
+
+        Ok((input, Self([a, b, c, d])))
+    }
+}
 
 impl Index<u32> for State {
     type Output = u32;
@@ -99,14 +126,30 @@ struct Instruction {
 
 impl Instruction {
     fn from_string(input: &str) -> Self {
-        let mut split = input.trim().split(' ');
+        Self::parser(input).unwrap().1
+    }
 
-        Self {
-            opcode: split.next().unwrap().parse::<u8>().unwrap(),
-            input_a: split.next().unwrap().parse::<u32>().unwrap(),
-            input_b: split.next().unwrap().parse::<u32>().unwrap(),
-            output_c: split.next().unwrap().parse::<u32>().unwrap(),
-        }
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (opcode, input_a, input_b, output_c)) = tuple((
+            delimited(
+                multispace0,
+                map_res(digit1, |x: &str| x.parse::<u8>()),
+                char(' '),
+            ),
+            terminated(map_res(digit1, |x: &str| x.parse::<u32>()), char(' ')),
+            terminated(map_res(digit1, |x: &str| x.parse::<u32>()), char(' ')),
+            map_res(digit1, |x: &str| x.parse::<u32>()),
+        ))(input)?;
+
+        Ok((
+            input,
+            Self {
+                opcode,
+                input_a,
+                input_b,
+                output_c,
+            },
+        ))
     }
 
     fn validate_opcode(&self) -> Result<(), Error> {
@@ -352,24 +395,17 @@ struct Sample {
 
 impl Sample {
     fn many_from_string(input: &str) -> Vec<Self> {
-        let re = Regex::new(r"Before: \[(\d+), (\d+), (\d+), (\d+)\]\n((?:\d+\s*)+)\nAfter:  \[(\d+), (\d+), (\d+), (\d+)\]").unwrap();
-        re.captures_iter(input)
-            .map(|cap| Self {
-                before: State([
-                    cap[1].parse::<u32>().unwrap(),
-                    cap[2].parse::<u32>().unwrap(),
-                    cap[3].parse::<u32>().unwrap(),
-                    cap[4].parse::<u32>().unwrap(),
-                ]),
-                op: Instruction::from_string(&cap[5]),
-                after: State([
-                    cap[6].parse::<u32>().unwrap(),
-                    cap[7].parse::<u32>().unwrap(),
-                    cap[8].parse::<u32>().unwrap(),
-                    cap[9].parse::<u32>().unwrap(),
-                ]),
-            })
-            .collect()
+        many1(Self::parser)(input).unwrap().1
+    }
+
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (before, op, after)) = tuple((
+            preceded(pair(multispace0, tag("Before:")), State::parser),
+            Instruction::parser,
+            preceded(pair(multispace0, tag("After:")), State::parser),
+        ))(input)?;
+
+        Ok((input, Self { before, op, after }))
     }
 
     fn find_possible_opcodes(&self) -> Vec<u8> {

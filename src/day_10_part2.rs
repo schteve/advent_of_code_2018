@@ -6,7 +6,11 @@
 */
 
 use crate::common::Point;
-use regex::Regex;
+use nom::{
+    bytes::complete::tag,
+    sequence::{delimited, pair},
+    IResult,
+};
 use std::fmt;
 
 struct StarMap {
@@ -19,23 +23,22 @@ impl StarMap {
         let mut stars: Vec<Point> = Vec::new();
         let mut velocity: Vec<Point> = Vec::new();
 
-        let re = Regex::new(r"position=<\s*(-?\d+),\s+(-?\d+)> velocity=<\s*(-?\d+),\s+(-?\d+)>")
-            .unwrap();
-        for cap in re.captures_iter(input) {
-            let p = Point {
-                x: cap[1].parse::<i32>().unwrap(),
-                y: cap[2].parse::<i32>().unwrap(),
-            };
-            stars.push(p);
-
-            let p = Point {
-                x: cap[3].parse::<i32>().unwrap(),
-                y: cap[4].parse::<i32>().unwrap(),
-            };
-            velocity.push(p);
+        for line in input.lines() {
+            let (star, vel) = Self::parser(line).unwrap().1;
+            stars.push(star);
+            velocity.push(vel);
         }
 
         Self { stars, velocity }
+    }
+
+    fn parser(input: &str) -> IResult<&str, (Point, Point)> {
+        let (input, (star, velocity)) = pair(
+            delimited(tag("position=<"), Point::parser, tag(">")),
+            delimited(tag(" velocity=<"), Point::parser, tag(">")),
+        )(input)?;
+
+        Ok((input, (star, velocity)))
     }
 
     fn get_range(&self) -> ((i32, i32), (i32, i32)) {
@@ -137,7 +140,7 @@ mod test {
 
     #[test]
     fn test_step() {
-        let input = "
+        let input = "\
 position=< 9,  1> velocity=< 0,  2>
 position=< 7,  0> velocity=<-1,  0>
 position=< 3, -2> velocity=<-1,  1>
@@ -270,7 +273,7 @@ position=<-3,  6> velocity=< 2, -1>";
 
     #[test]
     fn test_step_until_minimum_range() {
-        let input = "
+        let input = "\
 position=< 9,  1> velocity=< 0,  2>
 position=< 7,  0> velocity=<-1,  0>
 position=< 3, -2> velocity=<-1,  1>

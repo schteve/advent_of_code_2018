@@ -1,4 +1,11 @@
 use crate::common::Cardinal;
+use nom::{
+    character::complete::{char, one_of, space0},
+    combinator::{cond, map_res, opt, recognize},
+    multi::many1,
+    sequence::{pair, preceded, separated_pair, tuple},
+    IResult,
+};
 use std::cmp::Ordering;
 use std::fmt;
 use std::ops;
@@ -15,17 +22,30 @@ impl Point {
     }
 
     pub fn from_string(input: &str) -> Self {
-        // Accepts the following, with whitespace allowed anyhwere:
+        Point::parser(input).expect("Invalid point format").1
+    }
+
+    pub fn parser(input: &str) -> IResult<&str, Self> {
+        // Accepts the following, with whitespace allowed anywhere:
         //  123,456
-        // Equivalent regex: \s+(\d+)\s+,\s+(\d+)\s+
-        let mut parts = input.trim().split(',');
-        let a = parts.next().unwrap().trim().parse::<i32>();
-        let b = parts.next().unwrap().trim().parse::<i32>();
-        if let (Ok(x), Ok(y)) = (a, b) {
-            Point { x, y }
-        } else {
-            panic!("Invalid point format");
-        }
+        //  (123,456)
+        let (input, _) = space0(input)?;
+        let (input, open_paren) = opt(char('('))(input)?;
+        let (input, (x, y)) = preceded(
+            space0,
+            separated_pair(
+                map_res(recognize(many1(one_of("-01234567890"))), |x: &str| {
+                    x.parse::<i32>()
+                }),
+                tuple((space0, char(','), space0)),
+                map_res(recognize(many1(one_of("-01234567890"))), |y: &str| {
+                    y.parse::<i32>()
+                }),
+            ),
+        )(input)?;
+        let (input, _) = cond(open_paren.is_some(), pair(space0, char(')')))(input)?;
+
+        Ok((input, Self { x, y }))
     }
 
     pub fn manhattan(a: Self, b: Self) -> u32 {
@@ -196,6 +216,34 @@ impl Ord for Point {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_from_string() {
+        assert_eq!(Point::from_string("123,456"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string(" 123,456"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("123 ,456"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("123, 456"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("123,456 "), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string(" 123 , 456 "), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("(123,456)"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string(" (123,456)"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("( 123,456)"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("(123 ,456)"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("(123, 456)"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("(123,456 )"), Point { x: 123, y: 456 });
+        assert_eq!(Point::from_string("(123,456) "), Point { x: 123, y: 456 });
+        assert_eq!(
+            Point::from_string("( 123 , 456 )"),
+            Point { x: 123, y: 456 }
+        );
+        assert_eq!(Point::from_string("123,456)"), Point { x: 123, y: 456 });
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_from_string_fail() {
+        Point::from_string("(123,456");
+    }
 
     #[test]
     fn test_manhattan() {

@@ -65,7 +65,14 @@
     After 20 generations, what is the sum of the numbers of all pots which contain a plant?
 */
 
-use regex::Regex;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{line_ending, one_of},
+    combinator::{map, opt, recognize},
+    multi::many1,
+    sequence::{delimited, pair, terminated},
+    IResult,
+};
 use std::fmt;
 
 #[derive(Clone)]
@@ -143,21 +150,37 @@ struct Tunnel {
 
 impl Tunnel {
     fn from_string(input: &str) -> Self {
-        let re = Regex::new(r"initial state: ([#\.]+)").unwrap();
-        let caps = re.captures(input).unwrap();
+        Self::parser(input).unwrap().1
+    }
 
-        let re = Regex::new(r"([#\.]+) => ([#\.])").unwrap();
-        let rules_list: Vec<i32> = re
-            .captures_iter(input)
-            .filter(|cap| &cap[2] == "#")
-            .map(|cap| Tunnel::rule_id_from_string(&cap[1]))
-            .collect();
-        let rules: Vec<bool> = (0..32).map(|i| rules_list.contains(&i)).collect();
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (pots, rules)) = pair(
+            map(
+                delimited(
+                    tag("initial state: "),
+                    recognize(many1(one_of("#."))),
+                    many1(line_ending),
+                ),
+                |x: &str| Pots::from_string(x),
+            ),
+            map(
+                many1(pair(
+                    terminated(recognize(many1(one_of("#."))), tag(" => ")),
+                    terminated(one_of("#."), opt(line_ending)),
+                )),
+                |vr: Vec<(&str, char)>| {
+                    let rules_list: Vec<i32> = vr
+                        .into_iter()
+                        .filter(|(_r, c)| *c == '#')
+                        .map(|(r, _c)| Tunnel::rule_id_from_string(r))
+                        .collect();
+                    let rules: Vec<bool> = (0..32).map(|i| rules_list.contains(&i)).collect();
+                    rules
+                },
+            ),
+        )(input)?;
 
-        Self {
-            pots: Pots::from_string(&caps[1]),
-            rules,
-        }
+        Ok((input, Self { pots, rules }))
     }
 
     fn rule_id_from_string(input: &str) -> i32 {
@@ -223,7 +246,7 @@ mod test {
 
     #[test]
     fn test_step() {
-        let input = "
+        let input = "\
 initial state: #..#.#..##......###...###
 
 ...## => #
@@ -273,7 +296,7 @@ initial state: #..#.#..##......###...###
 
     #[test]
     fn test_pots_sum() {
-        let input = "
+        let input = "\
 initial state: #..#.#..##......###...###
 
 ...## => #

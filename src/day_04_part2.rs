@@ -7,8 +7,14 @@
     What is the ID of the guard you chose multiplied by the minute you chose? (In the above example, the answer would be 99 * 45 = 4455.)
 */
 
-use lazy_static::lazy_static;
-use regex::Regex;
+use nom::{
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::{char, digit1},
+    combinator::{map, map_res},
+    sequence::{delimited, pair, preceded, tuple},
+    IResult,
+};
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug)]
@@ -22,18 +28,32 @@ struct Timestamp {
 
 impl Timestamp {
     fn from_string(input: &str) -> Self {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"\[(\d+)\-(\d+)\-(\d+) (\d+):(\d+)\]").unwrap();
-        }
-        let caps = RE.captures(input).unwrap();
+        Self::parser(input).unwrap().1
+    }
 
-        Self {
-            year: caps[1].parse::<u32>().unwrap(),
-            month: caps[2].parse::<u32>().unwrap(),
-            day: caps[3].parse::<u32>().unwrap(),
-            hour: caps[4].parse::<u32>().unwrap(),
-            minute: caps[5].parse::<u32>().unwrap(),
-        }
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (year, month, day, hour, minute)) = tuple((
+            preceded(char('['), map_res(digit1, |y: &str| y.parse::<u32>())),
+            preceded(char('-'), map_res(digit1, |m: &str| m.parse::<u32>())),
+            preceded(char('-'), map_res(digit1, |d: &str| d.parse::<u32>())),
+            preceded(char(' '), map_res(digit1, |h: &str| h.parse::<u32>())),
+            delimited(
+                char(':'),
+                map_res(digit1, |m: &str| m.parse::<u32>()),
+                char(']'),
+            ),
+        ))(input)?;
+
+        Ok((
+            input,
+            Self {
+                year,
+                month,
+                day,
+                hour,
+                minute,
+            },
+        ))
     }
 
     fn get_u32(&self) -> u32 {
@@ -56,43 +76,27 @@ struct Record {
 
 impl Record {
     fn from_string(input: &str) -> Self {
-        // Begin shift
-        lazy_static! {
-            static ref RE_BEGIN_SHIFT: Regex =
-                Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) Guard #(\d+) begins shift").unwrap();
-        }
-        if let Some(caps) = RE_BEGIN_SHIFT.captures(input) {
-            return Self {
-                timestamp: Timestamp::from_string(&caps[1]),
-                action: GuardAction::BeginShift(caps[2].parse::<u32>().unwrap()),
-            };
-        }
+        Self::parser(input).unwrap().1
+    }
 
-        // Fall asleep
-        lazy_static! {
-            static ref RE_FALL_ASLEEP: Regex =
-                Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) falls asleep").unwrap();
-        }
-        if let Some(caps) = RE_FALL_ASLEEP.captures(input) {
-            return Self {
-                timestamp: Timestamp::from_string(&caps[1]),
-                action: GuardAction::FallAsleep,
-            };
-        }
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (timestamp, action)) = pair(
+            Timestamp::parser,
+            alt((
+                map(
+                    delimited(
+                        tag(" Guard #"),
+                        map_res(digit1, |guard_id: &str| guard_id.parse::<u32>()),
+                        tag(" begins shift"),
+                    ),
+                    |guard_id| GuardAction::BeginShift(guard_id),
+                ),
+                map(tag(" falls asleep"), |_| GuardAction::FallAsleep),
+                map(tag(" wakes up"), |_| GuardAction::WakeUp),
+            )),
+        )(input)?;
 
-        // Wake up
-        lazy_static! {
-            static ref RE_WAKE_UP: Regex =
-                Regex::new(r"(\[\d+\-\d+\-\d+ \d+:\d+\]) wakes up").unwrap();
-        }
-        if let Some(caps) = RE_WAKE_UP.captures(input) {
-            return Self {
-                timestamp: Timestamp::from_string(&caps[1]),
-                action: GuardAction::WakeUp,
-            };
-        }
-
-        panic!("Unknown record");
+        Ok((input, Self { timestamp, action }))
     }
 }
 

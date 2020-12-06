@@ -134,8 +134,15 @@
     How many units does the immune system have left after getting the smallest boost it needs to win?
 */
 
-use lazy_static::lazy_static;
-use regex::Regex;
+use nom::{
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::{alpha1, char, digit1, multispace0},
+    combinator::{map, map_res, opt, success},
+    multi::{many1, separated_list1},
+    sequence::{delimited, pair, preceded, terminated, tuple},
+    IResult,
+};
 use std::cmp;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -150,47 +157,74 @@ struct Group {
 }
 
 impl Group {
-    fn from_string(input: &str) -> Option<Self> {
-        lazy_static! {
-            static ref RE1: Regex = Regex::new(r"^(\d+) units each with (\d+) hit points (?:\(.*?\) )?with an attack that does (\d+) (\w+) damage at initiative (\d+)").unwrap();
-            static ref RE2: Regex = Regex::new(r"weak to (.*?)(;|\))").unwrap();
-            static ref RE3: Regex = Regex::new(r"immune to (.*?)(;|\))").unwrap();
+    fn from_string(input: &str) -> Self {
+        Self::parser(input).unwrap().1
+    }
+
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (units, hp, modifiers, atk_dmg, atk_type, initiative)) = tuple((
+            delimited(
+                multispace0,
+                map_res(digit1, |x: &str| x.parse::<u32>()),
+                tag(" units each with "),
+            ),
+            terminated(
+                map_res(digit1, |x: &str| x.parse::<u32>()),
+                tag(" hit points"),
+            ),
+            opt(delimited(
+                tag(" ("),
+                separated_list1(
+                    tag("; "),
+                    alt((
+                        pair(
+                            success(false),
+                            preceded(tag("immune to "), separated_list1(tag(", "), alpha1)),
+                        ),
+                        pair(
+                            success(true),
+                            preceded(tag("weak to "), separated_list1(tag(", "), alpha1)),
+                        ),
+                    )),
+                ),
+                char(')'),
+            )),
+            preceded(
+                tag(" with an attack that does "),
+                map_res(digit1, |x: &str| x.parse::<u32>()),
+            ),
+            preceded(char(' '), map(alpha1, |x: &str| x.to_owned())),
+            preceded(
+                tag(" damage at initiative "),
+                map_res(digit1, |x: &str| x.parse::<u32>()),
+            ),
+        ))(input)?;
+
+        let mut weaknesses: Vec<String> = Vec::new();
+        let mut immunities: Vec<String> = Vec::new();
+        if let Some(m) = modifiers {
+            for (is_weakness, values) in m {
+                let values_iter = values.iter().map(|s| s.to_string());
+                if is_weakness == true {
+                    weaknesses.extend(values_iter);
+                } else {
+                    immunities.extend(values_iter);
+                }
+            }
         }
-        let caps_raw = RE1.captures(input.trim());
-        if caps_raw.is_none() == true {
-            return None;
-        }
 
-        let caps = caps_raw.unwrap();
-        let units = caps[1].parse::<u32>().unwrap();
-        let hp = caps[2].parse::<u32>().unwrap();
-        let atk_dmg = caps[3].parse::<u32>().unwrap();
-        let atk_type = caps[4].to_owned();
-        let initiative = caps[5].parse::<u32>().unwrap();
-
-        let caps_raw = RE2.captures(input);
-        let weaknesses = if let Some(caps) = caps_raw {
-            caps[1].split(", ").map(|s| s.to_owned()).collect()
-        } else {
-            Vec::new()
-        };
-
-        let caps_raw = RE3.captures(input);
-        let immunities = if let Some(caps) = caps_raw {
-            caps[1].split(", ").map(|s| s.to_owned()).collect()
-        } else {
-            Vec::new()
-        };
-
-        Some(Self {
-            units,
-            hp,
-            atk_dmg,
-            atk_type,
-            initiative,
-            weaknesses,
-            immunities,
-        })
+        Ok((
+            input,
+            Self {
+                units,
+                hp,
+                atk_dmg,
+                atk_type,
+                initiative,
+                weaknesses,
+                immunities,
+            },
+        ))
     }
 
     fn effective_power(&self) -> u32 {
@@ -222,24 +256,19 @@ struct System {
 
 impl System {
     fn from_string(input: &str) -> Self {
-        let mut immune: Vec<Group> = Vec::new();
-        let mut infection: Vec<Group> = Vec::new();
-        let mut is_immune = true;
-        for line in input.lines() {
-            if line.starts_with("Immune System:") == true {
-                is_immune = true;
-            } else if line.starts_with("Infection:") == true {
-                is_immune = false;
-            } else if let Some(group) = Group::from_string(line) {
-                if is_immune == true {
-                    immune.push(group);
-                } else {
-                    infection.push(group);
-                }
-            }
-        }
+        Self::parser(input).unwrap().1
+    }
 
-        Self { immune, infection }
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (immune, infection)) = pair(
+            preceded(
+                pair(multispace0, tag("Immune System:")),
+                many1(Group::parser),
+            ),
+            preceded(pair(multispace0, tag("Infection:")), many1(Group::parser)),
+        )(input)?;
+
+        Ok((input, Self { immune, infection }))
     }
 
     fn select_targets(friendly: &[Group], enemy: &[Group]) -> Vec<Option<usize>> {

@@ -42,7 +42,12 @@
 */
 
 use crate::common::Point;
-use regex::Regex;
+use nom::{
+    character::complete::{char, digit1, space1},
+    combinator::map_res,
+    sequence::{preceded, separated_pair, tuple},
+    IResult,
+};
 use std::collections::HashMap;
 
 struct Claim {
@@ -53,17 +58,28 @@ struct Claim {
 
 impl Claim {
     fn from_string(input: &str) -> Self {
-        let re = Regex::new(r"#(\d+) @ (\d+,\d+): (\d+)x(\d+)").unwrap();
-        let caps = re.captures(input).unwrap();
+        Self::parser(input).unwrap().1
+    }
 
-        Self {
-            id: caps[1].parse::<u32>().unwrap(),
-            location: Point::from_string(&caps[2]),
-            size: (
-                caps[3].parse::<u32>().unwrap(),
-                caps[4].parse::<u32>().unwrap(),
+    fn parser(input: &str) -> IResult<&str, Self> {
+        let (input, (_, id, _, _, location, _, size)) = tuple((
+            char('#'),
+            map_res(digit1, |id: &str| id.parse::<u32>()),
+            space1,
+            char('@'),
+            Point::parser,
+            char(':'),
+            preceded(
+                space1,
+                separated_pair(
+                    map_res(digit1, |size0: &str| size0.parse::<u32>()),
+                    char('x'),
+                    map_res(digit1, |size1: &str| size1.parse::<u32>()),
+                ),
             ),
-        }
+        ))(input)?;
+
+        Ok((input, Self { id, location, size }))
     }
 }
 
