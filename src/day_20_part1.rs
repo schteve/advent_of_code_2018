@@ -256,8 +256,7 @@ impl Map {
 
     fn find_furthest_room(&self) -> u32 {
         let mut visited_steps: HashMap<Point, u32> = HashMap::new(); // Track which rooms were visited, indicating how many steps to each one
-        let mut frontier: Vec<Point> = Vec::new();
-        frontier.push(Point::new());
+        let mut frontier: Vec<Point> = vec![Point::new()];
 
         let mut steps = 0;
         while frontier.is_empty() == false {

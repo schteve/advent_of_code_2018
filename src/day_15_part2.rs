@@ -83,7 +83,6 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fmt;
 use std::fmt::Write;
-use std::iter::FromIterator;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Tile {
@@ -251,7 +250,7 @@ impl BattleMap {
     fn find_paths(&self, from: &Point, to: &[Point]) -> Vec<Path> {
         let mut paths: BTreeSet<Path> = BTreeSet::new();
         let mut shortest_path = None;
-        let to_set: BTreeSet<Point> = BTreeSet::from_iter(to.iter().cloned());
+        let to_set: BTreeSet<Point> = to.iter().cloned().collect();
 
         let starts: Vec<Point> = self.identify_adjacent_empty(from);
         for start in starts {
@@ -259,8 +258,7 @@ impl BattleMap {
             visited.insert(*from);
             visited.insert(start);
 
-            let mut frontier: Vec<Point> = Vec::new();
-            frontier.push(start);
+            let mut frontier: Vec<Point> = vec![start];
             let mut distance = 0;
             while frontier.is_empty() == false {
                 distance += 1;
@@ -312,12 +310,11 @@ impl BattleMap {
         }
 
         // Convert from BTreeSet to Vec, removing all but the shortest paths
-        let paths_vec: Vec<Path> = Vec::from_iter(
-            paths
-                .iter()
-                .filter(|path| path.length == shortest_path.unwrap())
-                .cloned(),
-        );
+        let paths_vec: Vec<Path> = paths
+            .iter()
+            .filter(|path| path.length == shortest_path.unwrap())
+            .cloned()
+            .collect();
         paths_vec
     }
 

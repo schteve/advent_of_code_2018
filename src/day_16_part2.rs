@@ -54,11 +54,11 @@ impl IndexMut<u32> for State {
 
 #[derive(Debug)]
 enum Error {
-    InvalidOpcode,
-    InvalidFunctioncode,
-    InvalidInputA,
-    InvalidInputB,
-    InvalidOutputC,
+    Opcode,
+    Functioncode,
+    InputA,
+    InputB,
+    OutputC,
 }
 
 struct Instruction {
@@ -98,7 +98,7 @@ impl Instruction {
 
     fn validate_opcode(&self) -> Result<(), Error> {
         if self.opcode > 15 {
-            Err(Error::InvalidOpcode)
+            Err(Error::Opcode)
         } else {
             Ok(())
         }
@@ -106,7 +106,7 @@ impl Instruction {
 
     fn validate_reg_a(&self) -> Result<(), Error> {
         if self.input_a > 3 {
-            Err(Error::InvalidInputA)
+            Err(Error::InputA)
         } else {
             Ok(())
         }
@@ -114,7 +114,7 @@ impl Instruction {
 
     fn validate_reg_b(&self) -> Result<(), Error> {
         if self.input_b > 3 {
-            Err(Error::InvalidInputB)
+            Err(Error::InputB)
         } else {
             Ok(())
         }
@@ -122,7 +122,7 @@ impl Instruction {
 
     fn validate_reg_c(&self) -> Result<(), Error> {
         if self.output_c > 3 {
-            Err(Error::InvalidOutputC)
+            Err(Error::OutputC)
         } else {
             Ok(())
         }
@@ -152,7 +152,7 @@ impl Instruction {
             13 => self.eqir(input),
             14 => self.eqri(input),
             15 => self.eqrr(input),
-            _ => Err(Error::InvalidFunctioncode),
+            _ => Err(Error::Functioncode),
         }
     }
 

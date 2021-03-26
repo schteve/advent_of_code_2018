@@ -92,6 +92,7 @@ impl NanoBot {
         ]
     }
 
+    #[allow(clippy::clippy::many_single_char_names)]
     fn to_octahedron(&self) -> Octahedron {
         let p = self.position; // Alias
         let r = self.signal_radius as i32; // Alias

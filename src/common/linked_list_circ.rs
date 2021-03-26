@@ -1,17 +1,17 @@
 use std::cmp::Ordering;
 
-struct LLNode {
+struct LlNode {
     prev: usize,
     next: usize,
     value: u32,
 }
 
-pub struct LLIter<'a> {
+pub struct LlIter<'a> {
     list: &'a LinkedListCirc,
     index: Option<usize>,
 }
 
-impl<'a> LLIter<'a> {
+impl<'a> LlIter<'a> {
     fn new(list: &'a LinkedListCirc) -> Self {
         Self {
             list,
@@ -20,7 +20,7 @@ impl<'a> LLIter<'a> {
     }
 }
 
-impl<'a> Iterator for LLIter<'a> {
+impl<'a> Iterator for LlIter<'a> {
     type Item = u32;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -46,7 +46,7 @@ impl<'a> Iterator for LLIter<'a> {
 }
 
 pub struct LinkedListCirc {
-    data: Vec<LLNode>,
+    data: Vec<LlNode>,
     head: Option<usize>,
     free_list: Option<usize>,
     current_idx: Option<usize>,
@@ -80,7 +80,7 @@ impl LinkedListCirc {
             free_idx
         } else {
             let new_node_idx = self.data.len();
-            let new_node = LLNode {
+            let new_node = LlNode {
                 // Dummy values
                 prev: 0,
                 next: 0,
@@ -211,8 +211,8 @@ impl LinkedListCirc {
         self.iter().collect()
     }
 
-    pub fn iter(&self) -> LLIter {
-        LLIter::new(self)
+    pub fn iter(&self) -> LlIter {
+        LlIter::new(self)
     }
 }
 

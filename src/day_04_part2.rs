@@ -89,7 +89,7 @@ impl Record {
                         map_res(digit1, |guard_id: &str| guard_id.parse::<u32>()),
                         tag(" begins shift"),
                     ),
-                    |guard_id| GuardAction::BeginShift(guard_id),
+                    GuardAction::BeginShift,
                 ),
                 map(tag(" falls asleep"), |_| GuardAction::FallAsleep),
                 map(tag(" wakes up"), |_| GuardAction::WakeUp),

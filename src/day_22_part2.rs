@@ -403,9 +403,7 @@ impl Cave {
             gi
         } else {
             // Otherwise, calculate it
-            let gi = if p == Point::new() {
-                0
-            } else if p == self.target {
+            let gi = if p == Point::new() || p == self.target {
                 0
             } else if p.y == 0 {
                 p.x as u32 * 16807
